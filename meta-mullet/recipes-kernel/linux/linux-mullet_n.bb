@@ -8,6 +8,9 @@ LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 COMPATIBLE_MACHINE = "mullet"
 
+# Use an older version of gcc (gcc >= 9 doesn't boot.)
+DEPENDS:remove = "virtual/${TARGET_PREFIX}gcc"
+DEPENDS += "virtual/${TARGET_PREFIX}gcc8"
 # file://0003-Backport-mainline-4.1-Bluetooth-subsystem.patch 
 # file://0004-Backport-mainline-4.1-Bluetooth-drivers.patch 
 # file://0005-video-mdp3-Continue-when-the-overlay-wasn-t-released.patch 
