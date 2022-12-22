@@ -17,6 +17,7 @@ SRC_URI = " git://android.googlesource.com/kernel/msm;branch=android-msm-mullet-
     file://img_info \
     file://0001-scripts-dtc-Remove-redundant-YYLOC-global-declaratio.patch \
     file://0002-ARM-uaccess-remove-put_user-code-duplication.patch \
+    file://0014-initramfs-Don-t-skip-initramfs.patch \
 "
 
 SRCREV = "b7157db4217f9ef1c5a4c9ef45ec35913ca77a88"
