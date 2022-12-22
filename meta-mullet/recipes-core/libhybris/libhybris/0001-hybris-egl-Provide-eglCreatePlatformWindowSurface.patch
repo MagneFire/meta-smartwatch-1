@@ -1,0 +1,42 @@
+From f55addfd3c9dcf058bfa769bf901684a9fd9a56e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Mon, 13 Jun 2022 23:48:56 +0200
+Subject: [PATCH] hybris: egl: Provide eglCreatePlatformWindowSurface. Most
+ platforms rely on the eglGetPlatformDisplay() function to determine if EGL
+ 1.5 is supported. Even if not all EGL 1.5 functions are actually implemented.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+---
+ hybris/egl/egl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/hybris/egl/egl.c b/hybris/egl/egl.c
+index 738eafd..9565ecf 100644
+--- a/hybris/egl/egl.c
++++ b/hybris/egl/egl.c
+@@ -315,6 +315,11 @@ EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
+ 	HYBRIS_TRACE_END("hybris-egl", "eglCreateWindowSurface", "");
+ 	return result;
+ }
++EGLSurface eglCreatePlatformWindowSurface(EGLDisplay dpy, EGLConfig config,
++		void *native_window, const EGLint *attrib_list)
++{
++	return eglCreateWindowSurface(dpy, config, (uintptr_t) native_window, attrib_list);
++}
+ 
+ static EGLSurface _my_eglCreatePlatformWindowSurfaceEXT(EGLDisplay dpy, EGLConfig config,
+ 		void *native_window, const EGLint *attrib_list)
+@@ -503,6 +508,7 @@ static struct FuncNamePair _eglHybrisOverrideFunctions[] = {
+ 	OVERRIDE_SAMENAME(eglGetPlatformDisplay),
+ 	OVERRIDE_SAMENAME(eglTerminate),
+ 	OVERRIDE_SAMENAME(eglCreateWindowSurface),
++	OVERRIDE_SAMENAME(eglCreatePlatformWindowSurface),
+ 	OVERRIDE_SAMENAME(eglDestroySurface),
+ 	OVERRIDE_SAMENAME(eglSwapInterval),
+ 	OVERRIDE_SAMENAME(eglCreateContext),
+-- 
+2.36.1
+
