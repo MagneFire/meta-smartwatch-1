@@ -16,6 +16,7 @@ SRC_URI = "git://android.googlesource.com/kernel/mediatek;branch=android-mediate
     file://0001-mediatek-ipanic-Remove-inline-to-fix-a-compilation-w.patch \
     file://0002-Fix-compilations-warnings.patch \
     file://0003-ARM-uaccess-remove-put_user-code-duplication.patch \
+    file://0001-Backport-mainline-4.1-Bluetooth-subsystem.patch \
     file://defconfig \
     file://img_info"
 SRCREV = "5f7ba64dbb0f566149f5190db8c229da623a54bb"
