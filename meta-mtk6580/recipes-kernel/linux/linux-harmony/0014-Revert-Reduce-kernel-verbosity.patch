@@ -1,0 +1,1964 @@
+From 8c53a57e0c6e6b6fe73a3a136a5e43e06ccfdac7 Mon Sep 17 00:00:00 2001
+From: MagneFire <IDaNLContact@gmail.com>
+Date: Sun, 13 Sep 2020 23:01:05 +0200
+Subject: [PATCH] Revert "Reduce kernel verbosity"
+
+This reverts commit 9bfe0b6f61495794f838fcaf5bfa05ce5cbf1903.
+---
+ arch/arm/kernel/devtree.c                     |   1 +
+ arch/arm/kernel/smp.c                         |  10 +
+ arch/arm/kernel/swp_emulate.c                 |   1 +
+ arch/arm/kernel/topology.c                    |   8 +
+ arch/arm/mm/init.c                            |   6 +
+ arch/arm/mm/mmu.c                             |   8 +
+ block/partition-generic.c                     |   1 +
+ drivers/base/power/wakeup.c                   |  34 +
+ drivers/block/loop.c                          |   1 +
+ .../pixart_hc/pixart_pah8001_driver.c         |  27 +-
+ drivers/input/mousedev.c                      |   2 +
+ .../mediatek/focaltech_all/focaltech_core.c   |  55 ++
+ .../mediatek/it7250/IT7260_driver.c           |  41 ++
+ drivers/input/touchscreen/mediatek/mtk_tpd.c  |  27 +
+ .../input/touchscreen/mediatek/tpd_debug.c    |   3 +
+ drivers/irqchip/irq-mt-eic.c                  | 127 +++-
+ drivers/misc/mediatek/accdet/accdet_drv.c     |  12 +-
+ drivers/misc/mediatek/accdet/mt6580/accdet.c  |   2 +-
+ drivers/misc/mediatek/accelerometer/accel.c   |  36 +
+ .../mediatek/accelerometer/accel_factory.c    |   3 +
+ drivers/misc/mediatek/alsps/aal_control.c     |   1 +
+ drivers/misc/mediatek/alsps/alsps.c           |  48 ++
+ drivers/misc/mediatek/alsps/alsps_factory.c   |   8 +
+ .../mediatek/auxadc/mt6580/mt_auxadc_hal.c    |   5 +
+ drivers/misc/mediatek/auxadc/mt_auxadc.c      | 121 ++++
+ drivers/misc/mediatek/boot/mt6580/mt_boot.c   |   2 +
+ drivers/misc/mediatek/boot/mt_boot_common.c   |  13 +-
+ .../mediatek/boot_reason/mt_boot_reason.c     |   8 +
+ .../mediatek/bosch/bosch_bha250/bhy_core.c    | 684 ++++++++++--------
+ .../mediatek/bosch/bosch_bha250/bhy_i2c.c     |  52 +-
+ .../mediatek/bosch/bosch_bha250/bstclass.c    |  39 +-
+ .../mediatek/btcvsd/mt6580/AudDrv_BTCVSD.c    |  47 ++
+ drivers/misc/mediatek/btif/mt6580/hal_btif.c  |  20 +
+ .../misc/mediatek/btif/mt6580/hal_btif_dma.c  |  18 +
+ drivers/misc/mediatek/btif/mtk_btif.c         | 193 ++++-
+ drivers/misc/mediatek/btif/mtk_btif_exp.c     |   9 +
+ drivers/misc/mediatek/c2k_ccci/f_rawbulk.c    |  27 +
+ .../misc/mediatek/ccci_util/ccci_util_dummy.c |  10 +-
+ .../mediatek/ccci_util/ccci_util_lib_fo.c     |   5 +
+ drivers/misc/mediatek/chip/mt6580/mt_chip.c   |   8 +
+ drivers/misc/mediatek/chip/mt_chip_common.c   |   1 +
+ drivers/misc/mediatek/cirq/mt_sys_cirq.c      |   3 +
+ .../misc/mediatek/cmdq/cmdq_device_common.c   |   5 +
+ drivers/misc/mediatek/cmdq/cmdq_record.c      |  17 +
+ .../misc/mediatek/cmdq/mt6580/cmdq_device.c   |   5 +
+ drivers/misc/mediatek/conn_md/conn_md.c       |  20 +
+ drivers/misc/mediatek/conn_md/conn_md_dump.c  |   1 +
+ .../connectivity/combo/common/core/btm_core.c |   1 +
+ .../connectivity/combo/common/linux/wmt_tm.c  | 173 ++++-
+ .../common_detect/mtk_wcn_stub_alps.c         |  28 +-
+ .../connectivity/common_detect/sdio_detect.c  |  18 +
+ .../connectivity/common_detect/wmt_detect.c   |  29 +
+ .../common/mt6580/mtk_wcn_consys_hw.c         |  74 ++
+ drivers/misc/mediatek/cqdma/cqdma.c           |  21 +
+ drivers/misc/mediatek/devapc/mt6580/devapc.c  |  12 +
+ .../misc/mediatek/devinfo/mt6580/devinfo.c    |   2 +
+ .../misc/mediatek/dispsys/mt6580/ddp_color.c  |  25 +
+ .../misc/mediatek/dispsys/mt6580/ddp_drv.c    |  10 +
+ .../misc/mediatek/dispsys/mt6580/ddp_dsi.c    |  90 +++
+ .../misc/mediatek/dispsys/mt6580/ddp_dump.c   |   9 +
+ .../misc/mediatek/dispsys/mt6580/ddp_gamma.c  |  10 +
+ .../misc/mediatek/dispsys/mt6580/ddp_pwm.c    |  23 +
+ .../misc/mediatek/dispsys/mt6580/ddp_rdma.c   |   2 +
+ drivers/misc/mediatek/dual_ccci/ccci_init.c   |  22 +-
+ drivers/misc/mediatek/dual_ccci/ccmni.c       |   1 +
+ .../dual_ccci/mt6580/src/ccci_platform.c      | 130 ++++
+ drivers/misc/mediatek/emd_ctl/emd_ctl_init.c  |   2 +
+ .../misc/mediatek/emi_bwl/mt6580/emi_bwl.c    |   1 +
+ .../misc/mediatek/emi_mpu/mt6580/emi_mpu.c    |  41 +-
+ .../misc/mediatek/gpio/mt6580/mt_gpio_base.c  |   5 +
+ drivers/misc/mediatek/gpio/mt_gpio_core.c     |   2 +
+ drivers/misc/mediatek/gpu/ged/src/ged_log.c   |   4 +
+ drivers/misc/mediatek/gpu/ged/src/ged_main.c  |   2 +
+ .../mali/mali/common/mali_kernel_common.h     |   5 +-
+ .../mali/mali/linux/mali_kernel_linux.c       |   2 +-
+ .../mediatek/hibcore/mtk_hibernate_core.c     |  17 +
+ .../misc/mediatek/hibcore/mtk_hibernate_dpm.c |   5 +
+ drivers/misc/mediatek/hwmon/batchsen/batch.c  |  51 ++
+ .../misc/mediatek/hwmon/hwmsen/hwmsen_dev.c   |  28 +
+ drivers/misc/mediatek/i2c/mt6580/i2c.c        |   5 +
+ drivers/misc/mediatek/i2c/mt6580/i2c_common.c |  14 +
+ drivers/misc/mediatek/irq/mt6580/irq.c        |   6 +
+ drivers/misc/mediatek/keypad/kpd.c            |  69 ++
+ drivers/misc/mediatek/keypad/mt6580/hal_kpd.c |   6 +-
+ .../misc/mediatek/lastpc/mt6580/lastpc_plt.c  |   1 +
+ .../rm67160_400x400_dsi_cmd_oled.c            |   4 +
+ .../rm67160_400x400_dsi_cmd_oled_hehui.c      |   1 +
+ drivers/misc/mediatek/leds/leds_drv.c         |   2 +-
+ drivers/misc/mediatek/leds/mt6580/leds.c      |  24 +-
+ drivers/misc/mediatek/lsq/lsq.c               |  28 +-
+ drivers/misc/mediatek/m4u/mt6580/m4u_hw.c     |  18 +
+ drivers/misc/mediatek/mach/mt6580/ca7_timer.c |   4 +
+ drivers/misc/mediatek/mach/mt6580/core.c      |   1 +
+ drivers/misc/mediatek/mach/mt6580/hotplug.c   |   5 +
+ drivers/misc/mediatek/mach/mt6580/mt-smp.c    |   8 +
+ drivers/misc/mediatek/mach/mt6580/mt_clkmgr.c |  40 +
+ .../misc/mediatek/mach/mt6580/mt_cpufreq.c    | 115 +++
+ drivers/misc/mediatek/mach/mt6580/mt_dcm.c    |  60 ++
+ drivers/misc/mediatek/mach/mt6580/mt_devs.c   |  40 +-
+ drivers/misc/mediatek/mach/mt6580/mt_gpt.c    |   8 +
+ .../misc/mediatek/mach/mt6580/mt_gpufreq.c    |  68 ++
+ .../mach/mt6580/mt_hotplug_strategy_algo.c    |  18 +
+ .../mach/mt6580/mt_hotplug_strategy_core.c    |   9 +
+ .../mach/mt6580/mt_hotplug_strategy_cpu.c     |   9 +
+ .../mach/mt6580/mt_hotplug_strategy_main.c    |  23 +
+ .../mach/mt6580/mt_hotplug_strategy_procfs.c  |   2 +
+ drivers/misc/mediatek/mach/mt6580/mt_idle.c   |  50 ++
+ .../misc/mediatek/mach/mt6580/mt_pm_init.c    |   1 +
+ drivers/misc/mediatek/mach/mt6580/mt_ptp.c    |  87 +++
+ drivers/misc/mediatek/mach/mt6580/mt_sleep.c  |  50 ++
+ .../mediatek/mach/mt6580/mtk_ccci_helper.c    |  47 ++
+ .../sf6580_weg_l/leds/mt65xx/cust_leds.c      |  21 +
+ .../mediatek/masp/mt6580/module/sec_mod.c     |  10 +
+ drivers/misc/mediatek/mem/mtk_memcfg.c        |  57 ++
+ drivers/misc/mediatek/mem/mtk_meminfo.c       |   3 +
+ drivers/misc/mediatek/mem/mtk_mrdump_setup.c  |   7 +
+ drivers/misc/mediatek/mmc-host/emmc_rpmb.c    |   2 +-
+ drivers/misc/mediatek/mmc-host/mt6580/dbg.c   |   7 +
+ .../mediatek/mmc-host/mt6580/mt_sd_misc.c     | 117 +++
+ drivers/misc/mediatek/mmc-host/mt6580/sd.c    | 325 ++++++++-
+ .../mediatek/mt_logger/mt_storage_logger.c    |   7 +
+ drivers/misc/mediatek/mu3d/drv/musb_gadget.c  |  79 ++
+ .../mediatek/pmic_wrap/mt6580/pwrap_hal.c     |   8 +
+ .../misc/mediatek/pmic_wrap/mt_pmic_wrap.c    |   1 +
+ .../mediatek/power/mt6580/battery_meter_hal.c |  23 +
+ .../mediatek/power/mt6580/charging_hw_pmic.c  |  44 ++
+ drivers/misc/mediatek/power/mt6580/pmic.c     | 401 +++++++++-
+ .../misc/mediatek/power/mt6580/pmic_auxadc.c  |   3 +
+ .../mediatek/power/mt6580/pmic_chr_type_det.c |  13 +-
+ .../mediatek/ram_console/mtk_ram_console.c    |  23 +
+ .../misc/mediatek/rtc/mt6580/mtk_rtc_hal.c    |  17 +
+ drivers/misc/mediatek/rtc/mtk_rtc_common.c    |  25 +-
+ .../mediatek/sched/mt_cpu_affinity/mt_sched.c |   3 +
+ drivers/misc/mediatek/sched/mt_sched.c        |   3 +
+ drivers/misc/mediatek/smi/mt6580/smi_common.c |  49 +-
+ drivers/misc/mediatek/spi/mt6580/spi-dev.c    |  34 +-
+ drivers/misc/mediatek/spi/mt6580/spi.c        |   6 +
+ drivers/misc/mediatek/spm/mt6580/mt_spm.c     |   3 +
+ .../misc/mediatek/spm/mt6580/mt_spm_dpidle.c  |   3 +
+ .../mediatek/spm/mt6580/mt_spm_internal.c     |   8 +
+ .../misc/mediatek/spm/mt6580/mt_spm_sleep.c   |   6 +
+ .../systracker/systracker_interface.c         |  10 +
+ .../systracker/systracker_interface_v2.c      |  14 +
+ .../mediatek/thermal/mt6580/mtk_ts_6311buck.c |  43 ++
+ .../mediatek/thermal/mt6580/mtk_ts_all_ts.c   | 131 ++++
+ .../mediatek/thermal/mt6580/mtk_ts_battery.c  |  50 ++
+ .../mediatek/thermal/mt6580/mtk_ts_buck.c     |  82 +++
+ .../misc/mediatek/thermal/mt6580/mtk_ts_cpu.c | 208 ++++++
+ .../misc/mediatek/thermal/mt6580/mtk_ts_pa.c  |  55 ++
+ .../mediatek/thermal/mt6580/mtk_ts_pmic.c     |  76 ++
+ .../misc/mediatek/thermal/mt6580/mtk_ts_wmt.c |  51 ++
+ .../misc/mediatek/uart/mt6580/platform_uart.c |  26 +-
+ drivers/misc/mediatek/uart/uart.c             |  40 +
+ .../misc/mediatek/usb11/mt6580/musbfsh_core.c |  61 ++
+ .../mediatek/usb11/mt6580/musbfsh_debugfs.c   |   2 +
+ .../mediatek/usb11/mt6580/musbfsh_mt65xx.c    |  47 ++
+ drivers/misc/mediatek/usb11/musbfsh_icusb.c   |  48 ++
+ drivers/misc/mediatek/usb11/musbfsh_virthub.c |  12 +
+ drivers/misc/mediatek/usb20/mt6580/usb20.c    |  58 ++
+ .../misc/mediatek/usb20/mt6580/usb20_phy.c    |  26 +
+ drivers/misc/mediatek/usb20/musb_core.c       |  66 ++
+ drivers/misc/mediatek/usb20/musb_gadget.c     |  83 +++
+ drivers/misc/mediatek/usb20/musb_host.c       |   7 +
+ drivers/misc/mediatek/usb20/musb_virthub.c    |   7 +
+ .../misc/mediatek/vibrator/mt6580/vibrator.c  |  62 ++
+ .../mt6580/videocodec_kernel_driver.c         |  54 ++
+ .../videox/mt6580/disp_assert_layer.c         |  10 +
+ .../mediatek/videox/mt6580/disp_drv_log.h     |   2 +-
+ .../misc/mediatek/videox/mt6580/disp_helper.c |   2 +
+ .../misc/mediatek/videox/mt6580/disp_lcm.c    |   2 +
+ .../misc/mediatek/videox/mt6580/disp_utils.c  |   1 +
+ .../mediatek/videox/mt6580/mtk_disp_mgr.c     |   2 +
+ drivers/misc/mediatek/videox/mt6580/mtkfb.c   |  32 +
+ .../misc/mediatek/videox/mt6580/mtkfb_dummy.c |  47 ++
+ .../mediatek/videox/mt6580/primary_display.c  | 238 ++++++
+ .../mt6580/aarch32/hw_watchpoint_aarch32.c    |  14 +
+ .../mt6580/aarch32/mt_dbg_aarch32.c           |   2 +
+ drivers/misc/mediatek/wdk/wd_api.c            |  27 +
+ drivers/misc/mediatek/wdk/wd_common_drv.c     |  46 ++
+ drivers/misc/mediatek/wdt/mt6580/mtk_wdt.c    |  42 ++
+ drivers/misc/mediatek/xlog/xlog_filter.c      |   2 +
+ drivers/mmc/card/block.c                      |  24 +-
+ drivers/mmc/core/core.c                       |  12 +
+ drivers/mmc/core/mmc.c                        |   4 +
+ drivers/mmc/core/sd_ops.c                     |   1 +
+ drivers/mtd/mtdcore.c                         |   4 +
+ drivers/of/of_reserved_mem.c                  |   9 +
+ drivers/power/mediatek/battery_common.c       | 401 ++++++++++
+ drivers/power/mediatek/battery_meter.c        | 598 +++++++++++++++
+ drivers/power/mediatek/battery_meter_fg_20.c  | 365 +++++++++-
+ drivers/power/mediatek/linear_charging.c      |  69 ++
+ drivers/power/mediatek/switch_charging.c      |   9 +
+ drivers/regulator/core.c                      |   4 +
+ drivers/spi/spi.c                             |   4 +-
+ drivers/staging/android/ion/ion.c             |   1 +
+ drivers/staging/android/ion/mtk/ion_drv.c     |   4 +
+ drivers/staging/android/ion/mtk/ion_fb_heap.c |   5 +
+ drivers/staging/zram/zram_drv.c               |   7 +-
+ drivers/tty/serial/serial_core.c              |   7 +
+ drivers/usb/class/cdc-acm.c                   |  15 +
+ drivers/usb/core/devio.c                      |   3 +
+ drivers/usb/core/driver.c                     |  58 ++
+ drivers/usb/core/generic.c                    |   9 +
+ drivers/usb/core/hub.c                        |  51 +-
+ drivers/usb/core/usb.c                        |   2 +
+ drivers/usb/gadget/android.c                  |  83 +++
+ drivers/usb/gadget/composite.c                |  76 ++
+ drivers/usb/gadget/f_acm.c                    |   7 +-
+ drivers/usb/gadget/f_ecm.c                    |  34 +-
+ drivers/usb/gadget/f_eem.c                    |  15 +
+ drivers/usb/gadget/f_fs.c                     |   7 +-
+ drivers/usb/gadget/f_mass_storage.c           |   9 +
+ drivers/usb/gadget/f_ncm.c                    |  45 ++
+ drivers/usb/gadget/f_rndis.c                  |  66 +-
+ drivers/usb/gadget/f_uac1.c                   |  20 +
+ fs/bio.c                                      |   1 +
+ fs/pstore/ram.c                               |   8 +
+ include/linux/hwmsen_helper.h                 |   2 +-
+ include/linux/kpd.h                           |   2 +-
+ include/linux/musb/musb_io.h                  |   6 +
+ ipc/msg.c                                     |   3 +
+ kernel/cpu.c                                  |  17 +
+ kernel/exit.c                                 |   1 +
+ kernel/fork.c                                 |  12 +
+ kernel/irq/irqdesc.c                          |   3 +
+ kernel/mutex-debug.c                          |  40 +-
+ kernel/power/autosleep.c                      |  21 +-
+ kernel/power/earlysuspend.c                   |  33 +
+ kernel/power/main.c                           |  13 +-
+ kernel/power/process.c                        |  19 +
+ kernel/power/sbsuspend.c                      |  47 ++
+ kernel/power/suspend.c                        |  18 +
+ kernel/power/tuxonice_bio_core.c              |   2 +
+ kernel/power/tuxonice_highlevel.c             |  19 +
+ kernel/power/wakelock.c                       |   9 +-
+ kernel/printk.c                               |   8 +
+ kernel/sched/core.c                           |   1 +
+ kernel/signal.c                               |   4 +
+ kernel/time/clocksource.c                     |   3 +
+ kernel/time/sched_clock.c                     |   3 +
+ kernel/workqueue.c                            |   3 +
+ lib/lz4k/lz4k_init.c                          |   1 +
+ lib/swiotlb.c                                 |   5 +
+ mm/memblock.c                                 |  12 +
+ mm/page_alloc.c                               |   5 +
+ mm/percpu.c                                   |  27 +
+ mm/slub.c                                     |   7 +
+ net/ipv6/addrconf.c                           |   4 +
+ net/sched/act_mirred.c                        |   1 +
+ net/sched/cls_u32.c                           |   4 +
+ net/sched/sch_generic.c                       |   3 +
+ .../mediatek/mt_soc_audio_6580/AudDrv_Clk.c   |  46 ++
+ .../mt_soc_audio_6580/mt_soc_afe_control.c    | 169 ++++-
+ .../mt_soc_audio_6580/mt_soc_codec_63xx.c     | 281 +++++++
+ .../mt_soc_audio_6580/mt_soc_codec_dummy.c    |   6 +
+ .../mt_soc_codec_speaker_63xx.c               |  13 +
+ .../mt_soc_audio_6580/mt_soc_dai_routing.c    |   4 +
+ .../mt_soc_audio_6580/mt_soc_dai_stub.c       |   7 +
+ .../mt_soc_audio_6580/mt_soc_machine.c        |  34 +
+ .../mt_soc_audio_6580/mt_soc_pcm_bt_dai.c     |  81 +++
+ .../mt_soc_audio_6580/mt_soc_pcm_capture.c    |  69 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_capture2.c   |  65 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_common.c     |   2 +
+ .../mt_soc_audio_6580/mt_soc_pcm_dl1.c        |  94 +++
+ .../mt_soc_audio_6580/mt_soc_pcm_dl1_awb.c    |  77 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_dl1_bt.c     |  55 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_dl1_i2s0.c   |  65 ++
+ .../mt_soc_pcm_dl1_i2s0Dl1.c                  |  56 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_dummy.c      |  29 +
+ .../mt_soc_audio_6580/mt_soc_pcm_fm_i2s.c     |  26 +
+ .../mt_soc_audio_6580/mt_soc_pcm_fm_i2s_awb.c |  66 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_fmtx.c       |  10 +
+ .../mt_soc_audio_6580/mt_soc_pcm_hdmi.c       |  85 +++
+ .../mt_soc_pcm_hp_impedance.c                 |  52 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_i2s0_awb.c   |  66 ++
+ .../mt_soc_audio_6580/mt_soc_pcm_mrgrx.c      |  35 +
+ .../mt_soc_audio_6580/mt_soc_pcm_mrgrx_awb.c  |  82 +++
+ .../mt_soc_audio_6580/mt_soc_pcm_routing.c    |  80 ++
+ .../mt_soc_pcm_uldlloopback.c                 |  19 +
+ .../mt_soc_audio_6580/mt_soc_pcm_voice_md1.c  |  30 +
+ .../mt_soc_pcm_voice_md1_bt.c                 |  26 +
+ .../mt_soc_audio_6580/mt_soc_pcm_voice_md2.c  |  30 +
+ .../mt_soc_pcm_voice_md2_bt.c                 |  24 +
+ .../mt_soc_audio_6580/mt_soc_tdm_capture.c    |  87 +++
+ .../mediatek/mt_soc_audio_8163/AudDrv_Ana.c   |   2 +
+ .../mt_soc_audio_8163/mt_soc_codec_63xx.c     | 249 +++++++
+ .../mt_soc_audio_8163/mt_soc_pcm_routing.c    |  65 ++
+ sound/soc/soc-compress.c                      |   2 +
+ sound/soc/soc-pcm.c                           |   2 +
+ 289 files changed, 10697 insertions(+), 428 deletions(-)
+ create mode 100644 drivers/misc/mediatek/vibrator/mt6580/vibrator.c
+
+diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
+index af32eb57..f8414182 100644
+--- a/arch/arm/kernel/devtree.c
++++ b/arch/arm/kernel/devtree.c
+@@ -236,6 +236,7 @@ struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
+ 		model = of_get_flat_dt_prop(dt_root, "compatible", NULL);
+ 	if (!model)
+ 		model = "<unknown>";
++	pr_info("Machine: %s, model: %s\n", mdesc_best->name, model);
+ 
+ 	/* Retrieve various information from the /chosen node */
+ 	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index 1a26bd8a..5c5842d6 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -220,6 +220,7 @@ void __cpuinit __cpu_die(unsigned int cpu)
+ 		pr_err("CPU%u: cpu didn't die\n", cpu);
+ 		return;
+ 	}
++	printk(KERN_NOTICE "CPU%u: shutdown\n", cpu);
+ 
+ 	/*
+ 	 * platform_cpu_kill() is generally expected to do the powering off
+@@ -355,6 +356,8 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
+ 	cpu_init();
+ 	aee_rr_rec_hoplug(cpu, 5, 0);
+ 
++	printk("CPU%u: Booted secondary processor\n", cpu);
++
+ 	preempt_disable();
+ 	aee_rr_rec_hoplug(cpu, 6, 0);
+ 	trace_hardirqs_off();
+@@ -412,6 +415,12 @@ void __init smp_cpus_done(unsigned int max_cpus)
+ 	for_each_online_cpu(cpu)
+ 		bogosum += per_cpu(cpu_data, cpu).loops_per_jiffy;
+ 
++	printk(KERN_INFO "SMP: Total of %d processors activated "
++	       "(%lu.%02lu BogoMIPS).\n",
++	       num_online_cpus(),
++	       bogosum / (500000/HZ),
++	       (bogosum / (5000/HZ)) % 100);
++
+ 	hyp_mode_check();
+ }
+ 
+@@ -606,6 +615,7 @@ static void ipi_cpu_stop(unsigned int cpu)
+ 	if (system_state == SYSTEM_BOOTING ||
+ 	    system_state == SYSTEM_RUNNING) {
+ 		raw_spin_lock(&stop_lock);
++		printk(KERN_CRIT "CPU%u: stopping\n", cpu);
+ 		dump_stack();
+ 		raw_spin_unlock(&stop_lock);
+ 	}
+diff --git a/arch/arm/kernel/swp_emulate.c b/arch/arm/kernel/swp_emulate.c
+index dbd473c4..b1b89882 100644
+--- a/arch/arm/kernel/swp_emulate.c
++++ b/arch/arm/kernel/swp_emulate.c
+@@ -271,6 +271,7 @@ static int __init swp_emulation_init(void)
+ 		return -ENOMEM;
+ #endif /* CONFIG_PROC_FS */
+ 
++	printk(KERN_NOTICE "Registering SWP/SWPB emulation handler\n");
+ 	register_undef_hook(&swp_hook);
+ 
+ 	return 0;
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index 2b677ca4..ba1cc284 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -249,6 +249,9 @@ void update_cpu_power(unsigned int cpu, unsigned long hwid)
+ 		return;
+ 
+ 	set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
++
++	printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
++		   cpu, arch_scale_freq_power(NULL, cpu));
+ }
+ 
+ #else
+@@ -871,6 +874,11 @@ void store_cpu_topology(unsigned int cpuid)
+ 	update_siblings_masks(cpuid);
+ 
+ 	update_cpu_power(cpuid, mpidr & MPIDR_HWID_BITMASK);
++
++	printk(KERN_INFO "CPU%u: thread %d, cpu %d, socket %d, mpidr %x\n",
++		   cpuid, cpu_topology[cpuid].thread_id,
++		   cpu_topology[cpuid].core_id,
++		   cpu_topology[cpuid].socket_id, mpidr);
+ }
+ 
+ /*
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index b293e41a..f39df9cc 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -331,6 +331,12 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
+ 	phys = memblock_alloc_base(size, align, MEMBLOCK_ALLOC_NOPASR);
+ 	memblock_free(phys, size);
+ 	memblock_remove(phys, size);
++	if (phys) {
++		MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT"[PHY layout]%ps   :   0x%08llx - 0x%08llx (0x%08llx)\n",
++			__builtin_return_address(0), (unsigned long long)phys, 
++		(unsigned long long)phys + size - 1,
++		(unsigned long long)size);
++	}
+ 
+ 	return phys;
+ }
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 5bdcb721..232bc22b 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -1338,6 +1338,10 @@ static void __init map_lowmem(void)
+ 	for_each_memblock(memory, reg) {
+ 		start = reg->base;
+ 		end = start + reg->size;
++                MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT"[PHY layout]kernel   :   0x%08llx - 0x%08llx (0x%08llx)\n",
++                      (unsigned long long)start,
++                      (unsigned long long)end - 1,
++                      (unsigned long long)reg->size);
+ 
+ 		if (end > arm_lowmem_limit)
+ 			end = arm_lowmem_limit;
+@@ -1354,6 +1358,10 @@ static void __init map_lowmem(void)
+ 			limit = end;
+ 			memblock_set_current_limit(limit);
+ 		}
++                printk(KERN_ALERT"creating mapping start pa: 0x%08llx @ 0x%08llx "
++                        ", end pa: 0x%08llx @ 0x%08llx\n",
++                       (unsigned long long)start, (unsigned long long)map.virtual,
++                       (unsigned long long)end, (unsigned long long)__phys_to_virt(end));
+ 		create_mapping(&map, false);
+ 	}
+ 
+diff --git a/block/partition-generic.c b/block/partition-generic.c
+index 47284e71..a2062d61 100644
+--- a/block/partition-generic.c
++++ b/block/partition-generic.c
+@@ -523,6 +523,7 @@ rescan:
+ 
+ 		if (state->parts[p].has_info)
+ 			info = &state->parts[p].info;
++		printk("add_partition==[%s:p%d]==start = %llu,size = %llu\n", disk->disk_name, p, (unsigned long long)from, (unsigned long long)size);
+ 		part = add_partition(disk, p, from, size,
+ 				     state->parts[p].flags,
+ 				     &state->parts[p].info);
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index d78ff224..d6d625af 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -701,6 +701,31 @@ void pm_get_active_wakeup_sources(char *pending_wakeup_source, size_t max)
+ }
+ EXPORT_SYMBOL_GPL(pm_get_active_wakeup_sources);
+ 
++static void print_active_wakeup_sources(void)
++{
++	struct wakeup_source *ws;
++	int active = 0;
++	struct wakeup_source *last_activity_ws = NULL;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
++		if (ws->active) {
++			pr_info("active wakeup source: %s\n", ws->name);
++			active = 1;
++		} else if (!active &&
++			   (!last_activity_ws ||
++			    ktime_to_ns(ws->last_time) >
++			    ktime_to_ns(last_activity_ws->last_time))) {
++			last_activity_ws = ws;
++		}
++	}
++
++	if (!active && last_activity_ws)
++		pr_info("last active wakeup source: %s\n",
++			last_activity_ws->name);
++	rcu_read_unlock();
++}
++
+ /**
+  * pm_wakeup_pending - Check if power transition in progress should be aborted.
+  *
+@@ -721,9 +746,16 @@ bool pm_wakeup_pending(void)
+ 		split_counters(&cnt, &inpr);
+ 		ret = (cnt != saved_count || inpr > 0);
+ 		events_check_enabled = !ret;
++
++		//<20130327> <marc.huang> add wakeup source dubug log
++		if (ret)
++			wakeup_warn("cnt: %d, saved_count: %d, inpr: %d\n", cnt, saved_count, inpr);
+ 	}
+ 	spin_unlock_irqrestore(&events_lock, flags);
+ 
++	if (ret)
++		print_active_wakeup_sources();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(pm_wakeup_pending);
+@@ -754,6 +786,8 @@ bool pm_get_wakeup_count(unsigned int *count, bool block)
+ 			if (inpr == 0 || signal_pending(current))
+ 				break;
+ 
++			//<20130327> <marc.huang> add wakeup source dubug log
++			print_active_wakeup_sources();
+ 			schedule();
+ 		}
+ 		finish_wait(&wakeup_count_wait_queue, &wait);
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 1c263705..4a811654 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -1883,6 +1883,7 @@ static int __init loop_init(void)
+ 		loop_add(&lo, i);
+ 	mutex_unlock(&loop_index_mutex);
+ 
++	printk(KERN_INFO "loop: module loaded\n");
+ 	return 0;
+ 
+ misc_out:
+diff --git a/drivers/input/keyboard/pixart_hc/pixart_pah8001_driver.c b/drivers/input/keyboard/pixart_hc/pixart_pah8001_driver.c
+index 7e611cc0..738e2f6b 100755
+--- a/drivers/input/keyboard/pixart_hc/pixart_pah8001_driver.c
++++ b/drivers/input/keyboard/pixart_hc/pixart_pah8001_driver.c
+@@ -214,10 +214,13 @@ static int pah8001_init_reg(void)
+ 	u8 data0 = 0, data1 = 0;
+ 	int ret = -1;
+ 	
++	printk("%s (%d) : pah8001 register initialize\n", __func__, __LINE__);
++
+ 	pah8001_write_reg(127, 0);		
+ 	pah8001_read_reg(0, &data0);	
+ 	pah8001_read_reg(1, &data1) ;
+ 	
++	printk("%s (%d) : ADDR0 = 0x%x, ADDR1 = 0x%x.\n", __func__, __LINE__, data0, data1);     // ADDR0 = 0x30, ADDR1= 0xd3
+ 	if( (data0 != 0x30 ) || ((data1&0xF0) != 0xD0) )
+ 	{
+ 		return -1 ;
+@@ -229,6 +232,8 @@ static int pah8001_init_reg(void)
+ 		return ret ;
+ 	}
+ 
++	printk("%s (%d) : pah8001 initialize register.\n", __func__, __LINE__);
++	
+ 	return 0;
+ }
+ 
+@@ -275,6 +280,7 @@ static void pah8001_ppg(void)
+ 			input_report_abs(pah8001data.pah8001_input_dev, ABS_Y, *(uint32_t *)(pah8001data.ppg_mems_data.HRD_Data + 4));
+ 			input_report_abs(pah8001data.pah8001_input_dev, ABS_Z, *(uint32_t *)(pah8001data.ppg_mems_data.HRD_Data + 8));
+ 			input_sync(pah8001data.pah8001_input_dev);		
++			printk(">>>%s (%d)(%d)(%d)(%d) \n", __func__,pah8001data.ppg_mems_data.HRD_Data[0], pah8001data.ppg_mems_data.HRD_Data[1], pah8001data.ppg_mems_data.HRD_Data[2], pah8001data.ppg_mems_data.HRD_Data[3]);
+ //			printk(">>>%s (%d)(%d)(%d)(%d) \n", __func__,pah8001data.ppg_mems_data.HRD_Data[4], pah8001data.ppg_mems_data.HRD_Data[5], pah8001data.ppg_mems_data.HRD_Data[6], pah8001data.ppg_mems_data.HRD_Data[7]);
+ //			printk(">>>%s (%d)(%d)(%d)(%d) \n", __func__,pah8001data.ppg_mems_data.HRD_Data[8], pah8001data.ppg_mems_data.HRD_Data[9], pah8001data.ppg_mems_data.HRD_Data[10], pah8001data.ppg_mems_data.HRD_Data[11]);
+ 			
+@@ -296,17 +302,20 @@ static void pah8001_x_work_func(struct work_struct *work)
+ 
+ static int pah8001_input_open(struct input_dev *dev)
+ {
++	printk(">>> %s (%d) \n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+ static void pah8001_input_close(struct input_dev *dev)
+ {
++	printk(">>> %s (%d) \n", __func__, __LINE__);
+ }
+ 
+ static int pah8001_init_input_data(void)
+ {
+ 	int ret = 0;
+ 
++	printk("%s (%d) : initialize data\n", __func__, __LINE__);
+ 	
+ 	pah8001data.pah8001_input_dev = input_allocate_device();
+ 	
+@@ -343,28 +352,33 @@ static int pah8001_init_input_data(void)
+ 
+ static ssize_t pah8001_read(struct file *filp,char *buf,size_t count,loff_t *l)
+ {
++	printk(">>>%s (%d) \n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+ static ssize_t pah8001_write(struct file *filp,const char *buf,size_t count,loff_t *f_ops)
+ {
++	printk(">>>%s (%d) \n", __func__, __LINE__);
+ 	return count;
+ }
+ 
+ static long pah8001_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ //static int pah8001_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
+ {
++	printk(">>> %s (%d) \n", __func__, __LINE__);	
+ 	//cancel_delayed_work_sync(&pah8001data.work);
+ 	return 0;
+ }
+ 
+ static int pah8001_open(struct inode *inode, struct file *filp)
+ {
++	printk(">>>%s (%d) \n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+ static int pah8001_release(struct inode *inode, struct file *filp)
+ {
++	printk(">>> %s (%d) \n", __func__, __LINE__);
+ 
+ 	return 0;
+ }
+@@ -387,14 +401,17 @@ struct miscdevice pixart_device = {
+ static ssize_t pah8001_enable_store(struct device* dev, 
+                                    struct device_attribute *attr, const char *buf, size_t count)
+ {
++	printk("%s (%d) :\n", __func__, __LINE__);
+ 	if((buf != NULL) && ( (1 == buf[0]) || ('1' == buf[0]) ))
+ 	{
++		printk("Enable!!\n");		
+ 		pah8001data.run_ppg = true;
+ 		schedule_delayed_work(&pah8001data.x_work, msecs_to_jiffies(100));
+ 		//pah8011_start();
+ 	}
+ 	else
+ 	{
++		printk("Disable!!\n");	
+ 		pah8001data.run_ppg = false ;
+ 	}
+ 	return count;
+@@ -404,6 +421,7 @@ static ssize_t pah8001_enable_show(struct device *dev, struct device_attribute *
+ {
+ 	
+ 	//cat rw_reg	
++	printk("%s (%d) : \n", __func__, __LINE__);
+ 	
+ 	return 0; 
+ }
+@@ -428,6 +446,7 @@ static int pah8001_create_attr(struct device *dev)
+ 	{
+ 		if((err = device_create_file(dev, pah8001_attr_list[idx])))
+ 		{            
++			printk("device_create_file (%s) = %d\n", pah8001_attr_list[idx]->attr.name, err);        
+ 			break;
+ 		}
+ 	}
+@@ -461,6 +480,8 @@ static int pah8001_i2c_probe(struct i2c_client *client, const struct i2c_device_
+ 	struct regulator *reg = NULL;		 
+ 	reg = regulator_get(&(client->dev), "VGP1");
+ 
++	printk("%s (%d) \n", __func__, __LINE__);
++ 
+ 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE)) {
+ 		err = -EIO;
+ 		return err;
+@@ -517,12 +538,13 @@ static int pah8001_i2c_remove(struct i2c_client *client)
+ }
+ 
+ static int pah8001_suspend(struct device *dev)
+-{
++{   printk("%s (%d) : pah8001 suspend \n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+ static int pah8001_resume(struct device *dev)
+ {
++	printk("%s (%d) : pah8001 resume \n", __func__, __LINE__);
+ 	return 0;
+ }
+ 
+@@ -558,6 +580,8 @@ static struct i2c_driver pah8001_i2c_driver = {
+ 
+ static int __init pah8001_init(void)
+ {
++	printk("%s (%d) :init module\n", __func__, __LINE__);
++	
+ 	#ifdef MTK_PLATFORM	
+ 	if(1)
+ 	{		
+@@ -578,6 +602,7 @@ static int __init pah8001_init(void)
+ 
+ static void __exit pah8001_exit(void)
+ {
++	printk("%s (%d) : exit module\n", __func__, __LINE__);	
+ 	misc_register(&pixart_device);
+ 	pah8001_delete_attr(pah8001data.pah8001_device);
+ 	i2c_del_driver(&pah8001_i2c_driver);
+diff --git a/drivers/input/mousedev.c b/drivers/input/mousedev.c
+index 4f8ce7ae..b604564d 100644
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -1112,6 +1112,8 @@ static int __init mousedev_init(void)
+ 
+ 	mousedev_psaux_register();
+ 
++	pr_info("PS/2 mouse device common for all mice\n");
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c b/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
+index ae0267f5..0e03dfd9 100755
+--- a/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
++++ b/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
+@@ -423,6 +423,7 @@ static	void tpd_power_switch(s32 state)
+ 		case POWER_ON:
+ 			if(power_flag==0)
+ 			{
++				printk("Power switch on!\n");
+ 				if(NULL == tpd->reg)
+ 				{
+ 					tpd->reg=regulator_get(tpd->tpd_dev,TPD_POWER_SOURCE_CUSTOM); // get pointer to regulator structure
+@@ -431,10 +432,13 @@ static	void tpd_power_switch(s32 state)
+ 						return;
+ 					}else
+ 					{
++						printk("regulator_get() Ok!\n");
+ 					}
+ 				}
+ 	
++				printk("regulator_set_voltage--begin\r\n");
+ 				ret=regulator_set_voltage(tpd->reg, 2800000, 2800000);	// set 2.8v
++				printk("regulator_set_voltage--end\r\n");
+ 				if (ret)
+ 					printk("regulator_set_voltage() failed!\n");
+ 				ret=regulator_enable(tpd->reg);  //enable regulator
+@@ -443,10 +447,15 @@ static	void tpd_power_switch(s32 state)
+ 
+ 				power_flag=1;
+ 			}
++			else
++			{
++				printk("######Power already is on!#######\n");
++			}
+ 			break;
+ 		case POWER_OFF:
+ 			if(power_flag==1)
+ 			{
++				printk("Power switch off!\n");
+ 				if(!IS_ERR_OR_NULL(tpd->reg))
+ 				{
+ 					ret=regulator_disable(tpd->reg); //disable regulator
+@@ -457,6 +466,10 @@ static	void tpd_power_switch(s32 state)
+ 					power_flag=0;
+ 				}
+ 			}
++			else
++			{
++				printk("#######Power already is off!########\n");
++			}
+ 			break;
+ 		  default:
+ 			printk("Invalid power switch command!");
+@@ -492,6 +505,7 @@ __probe_retry:
+ 	uc_reg_addr = FTS_REG_CHIP_ID;
+ 	fts_i2c_write(fts_i2c_client, &uc_reg_addr, 1);
+ 	retval=fts_i2c_read(fts_i2c_client, &uc_reg_addr, 0, &uc_reg_value, 1);
++	printk("mtk_tpd[FTS] chip id is %d.\n",uc_reg_value);
+ 	if(retval<0)
+ 	{
+ 		if(retry_count++ < 3)
+@@ -809,6 +823,7 @@ static int fts_read_Touchdata(struct ts_event *pinfo)
+ 	//u8 pt00f=0;
+ 	if (tpd_halt)
+ 	{
++		TPD_DMESG( "tpd_touchinfo return ..\n");
+ 		return false;
+ 	}
+ 
+@@ -1027,15 +1042,19 @@ static int tpd_enable_ps(int enable)
+ 		//return ret;
+ 	}
+ 	
++	printk("[proxi_fts]read: 999 0xb0's value is 0x%02X\n", state);
++
+ 	if (enable)
+ 	{
+ 		state |= 0x01;
+ 		tpd_proximity_flag = 1;
++		TPD_PROXIMITY_DEBUG("[proxi_fts]ps function is on\n");	
+ 	}
+ 	else
+ 	{
+ 		state &= 0x00;	
+ 		tpd_proximity_flag = 0;
++		TPD_PROXIMITY_DEBUG("[proxi_fts]ps function is off\n");
+ 	}
+ 	
+ 	//ret = i2c_smbus_write_i2c_block_data(fts_i2c_client, 0xB0, 1, &state);
+@@ -1045,6 +1064,7 @@ static int tpd_enable_ps(int enable)
+ 		printk("[Focal][Touch] write value fail");
+ 		//return ret;
+ 	}
++	TPD_PROXIMITY_DEBUG("[proxi_fts]write: 0xB0's value is 0x%02X\n", state);
+ 	return 0;
+ }
+  /************************************************************************
+@@ -1086,6 +1106,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 				{		
+ 					if((tpd_enable_ps(1) != 0))
+ 					{
++						APS_ERR("enable ps fail: %d\n", err); 
+ 						return -1;
+ 					}
+ 				}
+@@ -1093,6 +1114,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 				{
+ 					if((tpd_enable_ps(0) != 0))
+ 					{
++						APS_ERR("disable ps fail: %d\n", err); 
+ 						return -1;
+ 					}
+ 				}
+@@ -1101,6 +1123,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 		case SENSOR_GET_DATA:
+ 			if((buff_out == NULL) || (size_out< sizeof(hwm_sensor_data)))
+ 			{
++				APS_ERR("get sensor data parameter error!\n");
+ 				err = -EINVAL;
+ 			}
+ 			else
+@@ -1113,12 +1136,14 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 				else
+ 				{
+ 					sensor_data->values[0] = tpd_get_ps_value();
++					TPD_PROXIMITY_DEBUG("huang sensor_data->values[0] 1082 = %d\n", sensor_data->values[0]);
+ 					sensor_data->value_divide = 1;
+ 					sensor_data->status = SENSOR_STATUS_ACCURACY_MEDIUM;
+ 				}					
+ 			}
+ 			break;
+ 		default:
++			APS_ERR("proxmy sensor operate function no this parameter %d!\n", command);
+ 			err = -1;
+ 			break;
+ 	}
+@@ -1188,6 +1213,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 					printk("[Focal][Touch] read value fail");
+ 					//return ret;
+ 				}
++	           		TPD_PROXIMITY_DEBUG("proxi_fts 0xB0 state value is 1131 0x%02X\n", state);
+ 				if(!(state&0x01))
+ 				{
+ 					tpd_enable_ps(1);
+@@ -1209,8 +1235,10 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 					tpd_proximity_detect = 1;
+ 				}
+ 
++				TPD_PROXIMITY_DEBUG("tpd_proximity_detect 1149 = %d\n", tpd_proximity_detect);
+ 				if ((err = tpd_read_ps()))
+ 				{
++					TPD_PROXIMITY_DMESG("proxi_fts read ps data 1156: %d\n", err);	
+ 				}
+ 				sensor_data.values[0] = tpd_get_ps_value();
+ 				sensor_data.value_divide = 1;
+@@ -1233,6 +1261,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 		{
+ 			if (tpd_touchinfo(&cinfo, &pinfo)) 
+ 			{
++		    		printk("tpd point_num = %d\n",point_num);
+ 				TPD_DEBUG_SET_TIME;
+ 				if(point_num >0) 
+ 				{
+@@ -1329,16 +1358,19 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 
+ 	if ( 0 > tpd_power_init(1))
+ 	{
++		printk("mtk_tpd[FTS] Touch panel probe fail\n");
+ 		return -1;
+ 	}
+ 
+ 	uc_reg_addr = FTS_REG_POINT_RATE;				
+ 	fts_i2c_write(fts_i2c_client, &uc_reg_addr, 1);
+ 	fts_i2c_read(fts_i2c_client, &uc_reg_addr, 0, &uc_reg_value, 1);
++	printk("mtk_tpd[FTS] report rate is %dHz.\n",uc_reg_value * 10);
+ 
+ 	uc_reg_addr = FTS_REG_FW_VER;
+ 	fts_i2c_write(fts_i2c_client, &uc_reg_addr, 1);
+ 	fts_i2c_read(fts_i2c_client, &uc_reg_addr, 0, &uc_reg_value, 1);
++	printk("mtk_tpd[FTS] Firmware version = 0x%x\n", uc_reg_value);
+ 	
+ 	tpd_load_status = 1;
+ 	
+@@ -1378,6 +1410,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 	#endif
+ 	
+ 	#ifdef TPD_AUTO_UPGRADE
++		printk("********************Enter CTP Auto Upgrade********************\n");
+ 		fts_ctpm_auto_upgrade(fts_i2c_client);
+ 	#endif
+ 
+@@ -1410,6 +1443,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+ 		input_set_abs_params(tpd->dev, ABS_MT_POSITION_Y, 0, TPD_RES_Y, 0, 0);
+ 		input_set_abs_params(tpd->dev, ABS_MT_PRESSURE, 0, 255, 0, 0);
+ 	#endif
++   	printk("fts Touch Panel Device Probe %s\n", (retval < TPD_OK) ? "FAIL" : "PASS");
+    	return 0;
+    
+  }
+@@ -1439,6 +1473,8 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
+      		fts_release_apk_debug_channel();
+      #endif
+ 
++	TPD_DEBUG("TPD removed\n");
++ 
+    return 0;
+  }
+ #if GTP_ESD_PROTECT
+@@ -1520,6 +1556,7 @@ static void gtp_esd_check_func(struct work_struct *work)
+ 		printk("[Focal][Touch] read value fail");
+ 		//return ret;
+ 	}
++	printk("0x8F:%d, count_irq is %d\n", data, count_irq);
+ 			
+ 	flag_error = 0;
+ 	if((count_irq - data) > 10) 
+@@ -1537,6 +1574,7 @@ static void gtp_esd_check_func(struct work_struct *work)
+ 		
+ 	if(1 == flag_error) 
+ 	{	
++		printk("focal--tpd reset.1 == flag_error...data=%d	count_irq=%d\n ", data, count_irq);
+ 	    	force_reset_guitar();
+ 		reset_flag = 1;
+ 		goto FOCAL_RESET_INT;
+@@ -1550,6 +1588,7 @@ static void gtp_esd_check_func(struct work_struct *work)
+ 		printk("[Focal][Touch] read value fail");
+ 		//return ret;
+ 	}
++	printk("focal---------91 register value = 0x%02x	old value = 0x%02x\n",	data, g_old_91_Reg_Value);
+ 	if(0x01 == g_first_read_91) 
+ 	{
+ 		g_old_91_Reg_Value = data;
+@@ -1560,9 +1599,11 @@ static void gtp_esd_check_func(struct work_struct *work)
+ 		if(g_old_91_Reg_Value == data)
+ 		{
+ 			g_91value_same_count++;
++			printk("focal 91 value ==============, g_91value_same_count=%d\n", g_91value_same_count);
+ 			if(RESET_91_REGVALUE_SAMECOUNT == g_91value_same_count) 
+ 			{
+ 				force_reset_guitar();
++				printk("focal--tpd reset. g_91value_same_count = 5\n");
+ 				g_91value_same_count = 0;
+ 				reset_flag = 1;
+ 			}
+@@ -1625,6 +1666,7 @@ FOCAL_RESET_A3_REGISTER:
+ ***********************************************************************/
+  static int tpd_local_init(void)
+  {
++  	TPD_DMESG("Focaltech fts I2C Touchscreen Driver (Built %s @ %s)\n", __DATE__, __TIME__);
+    	if(i2c_add_driver(&tpd_i2c_driver)!=0)
+    	{
+         	TPD_DMESG("fts unable to add i2c driver.\n");
+@@ -1659,6 +1701,7 @@ FOCAL_RESET_A3_REGISTER:
+     		memcpy(tpd_calmat, tpd_def_calmat_local, 8*4);
+     		memcpy(tpd_def_calmat, tpd_def_calmat_local, 8*4);	
+ 	#endif  
++	TPD_DMESG("end %s, %d\n", __FUNCTION__, __LINE__);  
+ 	tpd_type_cap = 1;
+     	return 0; 
+  }
+@@ -1673,6 +1716,8 @@ FOCAL_RESET_A3_REGISTER:
+  {
+ 	int i=0,ret = 0;
+ 	
++ 	TPD_DMESG("TPD wake up\n");
++
+ #ifdef TPD_CLOSE_POWER_IN_SLEEP 
+ 	tpd_power_init(1);
+ #else
+@@ -1718,6 +1763,9 @@ FOCAL_RESET_A3_REGISTER:
+     count_irq = 0;
+ 	queue_delayed_work(gtp_esd_check_workqueue, &gtp_esd_check_work, TPD_ESD_CHECK_CIRCLE);
+ 	#endif
++
++	TPD_DMESG("TPD wake up done\n");
++
+  }
+  /************************************************************************
+ * Name: tpd_suspend
+@@ -1743,6 +1791,8 @@ FOCAL_RESET_A3_REGISTER:
+ 		}
+ 	}
+ 
++			
++	TPD_DMESG("TPD enter sleep\n");
+ 	#ifdef TPD_PROXIMITY
+ 	if (tpd_proximity_flag == 1)
+ 	{
+@@ -1815,6 +1865,9 @@ FOCAL_RESET_A3_REGISTER:
+ 	}
+ 	input_mt_report_pointer_emulation(fts_input_dev, false);
+ 	input_sync(fts_input_dev);
++	
++    	TPD_DMESG("TPD enter sleep done\n");
++
+  } 
+ 
+ 
+@@ -1840,6 +1893,7 @@ FOCAL_RESET_A3_REGISTER:
+ * Return: 0
+ ***********************************************************************/
+  static int __init tpd_driver_init(void) {
++    printk("MediaTek fts touch panel driver init\n");
+     i2c_register_board_info(IIC_PORT, &fts_i2c_tpd, 1);
+ 	if(tpd_driver_add(&tpd_device_driver) < 0)
+        	TPD_DMESG("add fts driver failed\n");
+@@ -1856,6 +1910,7 @@ FOCAL_RESET_A3_REGISTER:
+ ***********************************************************************/
+  static void __exit tpd_driver_exit(void) 
+  {
++        TPD_DMESG("MediaTek fts touch panel driver exit\n");
+ 	 //input_unregister_device(tpd->dev);
+ 	 tpd_driver_remove(&tpd_device_driver);
+  }
+diff --git a/drivers/input/touchscreen/mediatek/it7250/IT7260_driver.c b/drivers/input/touchscreen/mediatek/it7250/IT7260_driver.c
+index b444bfdd..bdb7f7f9 100755
+--- a/drivers/input/touchscreen/mediatek/it7250/IT7260_driver.c
++++ b/drivers/input/touchscreen/mediatek/it7250/IT7260_driver.c
+@@ -117,10 +117,13 @@ static  void it7260_power_switch(s32 state)
+ 						return;
+ 					}else
+ 					{
++						printk("regulator_get() Ok!\n");
+ 					}
+ 				}
+ 	
++				printk("regulator_set_voltage--begin\r\n");
+ 				ret=regulator_set_voltage(tpd->reg, 2800000, 2800000);  // set 2.8v
++				printk("regulator_set_voltage--end\r\n");
+ 				if (ret)
+ 					printk("regulator_set_voltage() failed!\n");
+ 				ret=regulator_enable(tpd->reg);  //enable regulator
+@@ -231,12 +234,14 @@ struct ioctl_cmd168 {
+ 
+ static ssize_t IT7260_upgrade_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ {
++	printk("[IT7260] %s():\n", __func__);
+ 	int bitsmask = 0;
+ 
+ 	mt_eint_mask(CUST_EINT_TOUCH_PANEL_NUM);
+ 	bitsmask = tpd_print_version();
+ 	if((bitsmask / 2)==1)
+ 	{
++		printk("FirmwareDownload");
+ 		if(!fnFirmwareDownload(fw_size,rawData,0,NULL))
+ 		{
+ 			printk("FirmwareDownload_fail");
+@@ -244,6 +249,7 @@ static ssize_t IT7260_upgrade_store(struct device *dev, struct device_attribute
+ 	}
+ 	if((bitsmask % 2)==1)
+ 	{
++		printk("ConfigDownload");
+ 		if(!fnFirmwareDownload(0,NULL,config_size,cfg_rawData))
+ 		{
+ 			printk("ConfigDownload_fail");
+@@ -380,6 +386,7 @@ int ite7260_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
+ 		}
+ 
+ 		datalen = (unsigned char) (data.length + 1);
++		printk("IOCTL_SET: datalen=%d.\n",datalen);
+ 		retval = tpd_i2c_write(i2c_client, &buffer[0], datalen);
+ 		pr_info("SET:retval=%x\n", retval);
+ 		retval = 0;
+@@ -485,6 +492,7 @@ static int tpd_i2c_write(struct i2c_client *client, uint8_t *buf, int len)
+     int ret = 0;
+ #ifdef I2C_SUPPORT_RS_DMA
+     int i = 0;
++    printk("start tpd_i2c_write len=%d.\n",len);
+     for(i = 0 ; i < len; i++){
+         I2CDMABuf_va[i] = buf[i];
+     }
+@@ -637,9 +645,11 @@ static int tpd_print_version(void) {
+ #endif
+ 	uint8_t pucCommandBuffer[8];
+     int ret = -1;
++    printk("[mtk-tpd] enter tpd_print_version .\n");
+ //get chip FW version
+ 	waitCommandDone();
+ 
++	printk("[mtk-tpd] tpd_print_version 413line.\n");
+     pucCommandBuffer[0] = 0x20;
+     pucCommandBuffer[1] = 0xE1;
+     pucCommandBuffer[2] = 0x04;
+@@ -653,9 +663,12 @@ static int tpd_print_version(void) {
+     waitCommandDone();
+     ret = tpd_i2c_read(i2c_client, &verFw[0], 4, 0xA0);
+ 
++    printk("[mtk-tpd] ITE7260 Touch Panel Firmware Version %x %x %x %x \n", 
++            verFw[0], verFw[1], verFw[2], verFw[3]); 
+ //get chip config version	
+ 	msleep(10);
+ 	waitCommandDone();
++	printk("[mtk-tpd] tpd_print_version 413line.\n");
+     buffer[0] = 0x20;
+     buffer[1] = 0x01;
+     buffer[2] = 0x06;
+@@ -663,6 +676,8 @@ static int tpd_print_version(void) {
+     msleep(10);
+     waitCommandDone();
+ 	ret = tpd_i2c_read(i2c_client, &verCfg[0], 8, 0xA0);
++    printk("[mtk-tpd] ITE7260 Touch Panel config Version %x %x %x %x \n", 
++            verCfg[1], verCfg[2], verCfg[3], verCfg[4]); 
+ 	
+ 	
+ 	if ((verCfg[1] != cfg_rawData[config_size-8]) || (verCfg[2] != cfg_rawData[config_size-7]) || (verCfg[3] != cfg_rawData[config_size-6]) || (verCfg[4] != cfg_rawData[config_size-5]))
+@@ -674,6 +689,7 @@ static int tpd_print_version(void) {
+ 		sum += 2;
+ 		}
+ 		
++		printk("print sum = %d\n", sum); 
+ 		return sum;
+ }
+ static int tpd_FW_version(void) {
+@@ -687,9 +703,11 @@ static int tpd_FW_version(void) {
+ #endif
+ 	uint8_t pucCommandBuffer[8];
+     int ret = -1;
++    printk("[mtk-tpd] enter tpd_print_version .\n");
+ //get chip FW version
+ 	waitCommandDone();
+ 
++	printk("[mtk-tpd] tpd_print_version 413line.\n");
+     pucCommandBuffer[0] = 0x20;
+     pucCommandBuffer[1] = 0xE1;
+     pucCommandBuffer[2] = 0x04;
+@@ -707,6 +725,7 @@ static int tpd_FW_version(void) {
+ }
+ static void IT7260_upgrade(void)
+ {
++	printk("[IT7260] %s():\n", __func__);
+ 	int bitsmask = 0;
+ 
+ 	bitsmask = tpd_print_version();
+@@ -754,12 +773,17 @@ static int tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
+ #endif
+ 	char buffer1[14];
+     i2c_client = client;
++    printk("MediaTek it7260 touch panel i2c probe\n");
++
++	
+ 	
+ 	mt_set_gpio_mode(GPIO_CTP_RST_PIN, GPIO_CTP_RST_PIN_M_GPIO);
+     mt_set_gpio_dir(GPIO_CTP_RST_PIN, GPIO_DIR_OUT);
+ 	mt_set_gpio_out(GPIO_CTP_RST_PIN, GPIO_OUT_ONE); 
+ 	msleep(10);
++	printk("TPd enter power on---begin-\r\n");
+ 	it7260_power_switch(POWER_ON);
++	printk("TPd enter power on---end-\r\n");
+ 	msleep(40);
+ 	mt_set_gpio_out(GPIO_CTP_RST_PIN, GPIO_OUT_ZERO); 
+ 	msleep(100);
+@@ -768,6 +792,7 @@ static int tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
+     if(FWversion&0x05170000) //7258
+     //if(0)
+     {
++    	printk("FWversion 1\n");
+ 		/*
+ 		msleep(20);
+     	mt_set_gpio_out(GPIO_CTP_RST_PIN, GPIO_OUT_ONE); 
+@@ -778,6 +803,7 @@ static int tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
+     else
+     {
+     	
++    	printk("Not 7258 touch IC\n");
+    		//mt_set_gpio_out(GPIO_CTP_RST_PIN, GPIO_OUT_ONE );
+ 		//msleep(100);
+ 		goto __probe_fail;
+@@ -825,6 +851,7 @@ static int tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
+ 	sysfs_create_group(&(client->dev.kobj), &it7260_attr_group);
+ 
+     tpd_load_status = 1;  
++    printk("DDD_____ 0xA0 : %X, %X\n", buffer[0], buffer[1]);  // add FAE   End
+     return TPD_OK;
+ 
+ __probe_fail:
+@@ -1080,6 +1107,7 @@ static int tpd_local_init(void)
+ {
+     int r;
+     
++	TPD_DMESG("Focaltech it7260 I2C Touchscreen Driver (Built %s @ %s)\n", __DATE__, __TIME__);
+ 		//power on, need confirm with SA
+ 
+     if(i2c_add_driver(&tpd_i2c_driver)!=0) {
+@@ -1106,6 +1134,7 @@ static int tpd_local_init(void)
+     memcpy(tpd_calmat, tpd_def_calmat_local, 8*4);
+     memcpy(tpd_def_calmat, tpd_def_calmat_local, 8*4);	
+ #endif  
++    printk("end %s, %d\n", __FUNCTION__, __LINE__);  
+ 
+     tpd_type_cap = 1;
+     
+@@ -1116,6 +1145,7 @@ static int tpd_local_init(void)
+ static void tpd_suspend(struct i2c_client *client, pm_message_t message)
+ {
+     int ret = 0;
++    printk("it7260 tpd_suspend start\n");
+ 
+     unsigned char Wrbuf_sleep[4] = { 0x20, 0x04, 0x00, 0x02 };
+  	unsigned char Wrbuf_idle[4] = { 0x20, 0x04, 0x00, 0x01 };
+@@ -1134,6 +1164,7 @@ static void tpd_resume(struct i2c_client *client)
+     unsigned char Wrbuf[2] = { 0x20, 0x6F};
+     char gsbuffer[2];
+ 
++	printk("it7260 tpd_resume start\n");
+ 	it7260_power_switch(POWER_ON);
+ 	mt_set_gpio_mode(GPIO_CTP_RST_PIN, GPIO_CTP_RST_PIN_M_GPIO);
+     mt_set_gpio_dir(GPIO_CTP_RST_PIN, GPIO_DIR_OUT);
+@@ -1156,6 +1187,7 @@ static void tpd_resume(struct i2c_client *client)
+ //	tpd_up(0, 0, 0, 0, 0);
+ 	tpd_up(0, 0, 0, 0, 0);
+ 	input_sync(tpd->dev);
++	printk("it7260 tpd_resume end\n");
+ }
+ 		
+ static struct tpd_driver_t tpd_device_driver = {
+@@ -1186,6 +1218,7 @@ static bool waitCommandDone(void)
+ 	if( !(ucQuery & 0x01) ){
+ 	        return  true;
+ 	}else{
++		printk("XXX %s, %d\n", __FUNCTION__, __LINE__);
+ 		return  false;
+ 	}
+ }
+@@ -1423,12 +1456,14 @@ bool fnFirmwareDownload(unsigned int unFirmwareLength, u8* pFirmware, unsigned i
+ 		printk("[IT7260] XXX %s, %d\n", __FUNCTION__, __LINE__);
+ 		return false;
+ 	}
++	printk("2\n");
+ 	//printk("[IT7260] fnFirmwareDownload %s, %d\n", __FUNCTION__, __LINE__);
+ 
+ 	if(!fnEnterFirmwareUpgradeMode()){
+ 		printk("[IT7260] XXX %s, %d\n", __FUNCTION__, __LINE__);
+ 		return false;
+ 	}
++	printk("3\n");
+ 	//printk("[IT7260] fnEnterFirmwareUpgradeMode %s, %d\n", __FUNCTION__, __LINE__);
+ 
+    mtk_wdt_enable ( WK_WDT_DIS );//	mtk_kick_wdt();
+@@ -1440,6 +1475,7 @@ bool fnFirmwareDownload(unsigned int unFirmwareLength, u8* pFirmware, unsigned i
+ 		}
+ 	}
+ 	//printk("[IT7260] fnWriteAndCompareFlash Fireware %s, %d\n", __FUNCTION__, __LINE__);
++	printk("4\n");
+ 
+ //	mtk_kick_wdt();
+ 	if(unConfigLength != 0 && pConfig != NULL){
+@@ -1451,6 +1487,7 @@ bool fnFirmwareDownload(unsigned int unFirmwareLength, u8* pFirmware, unsigned i
+ 		}
+ 	}
+ 	//printk("[IT7260] fnWriteAndCompareFlash Config %s, %d\n", __FUNCTION__, __LINE__);
++	printk("5\n");
+ 
+ //	mtk_kick_wdt();
+ 	if(!fnExitFirmwareUpgradeMode()){
+@@ -1458,12 +1495,14 @@ bool fnFirmwareDownload(unsigned int unFirmwareLength, u8* pFirmware, unsigned i
+ 		return false;
+ 	}
+ //	mtk_kick_wdt();
++	printk("[IT7260] fnExitFirmwareUpgradeMode %s, %d\n", __FUNCTION__, __LINE__);
+ 
+ 	if(!fnFirmwareReinitialize()){
+ 		printk("[IT7260] XXX %s, %d\n", __FUNCTION__, __LINE__);
+ 		return false;
+ 	}
+ //	mtk_kick_wdt();
++	printk("[IT7260] OOO %s, %d\n", __FUNCTION__, __LINE__);
+ 
+ 	mtk_wdt_enable (WK_WDT_EN );
+ 	return true;
+@@ -1473,6 +1512,7 @@ bool fnFirmwareDownload(unsigned int unFirmwareLength, u8* pFirmware, unsigned i
+ /* called when loaded into kernel */
+ static int __init tpd_driver_init(void)
+ {
++    printk("MediaTek IT7260 touch panel driver init\n");
+ #if defined(TPD_I2C_NUMBER)	//lshun modify 20130615
+     i2c_register_board_info(TPD_I2C_NUMBER, &it7260_i2c_tpd, 1);
+ #else
+@@ -1487,6 +1527,7 @@ static int __init tpd_driver_init(void)
+ /* should never be called */
+ static void __exit tpd_driver_exit(void)
+ {
++    printk("MediaTek IT7260 touch panel driver exit\n");
+     //input_unregister_device(tpd->dev);
+     tpd_driver_remove(&tpd_device_driver);
+ }
+diff --git a/drivers/input/touchscreen/mediatek/mtk_tpd.c b/drivers/input/touchscreen/mediatek/mtk_tpd.c
+index 5f7ce3bb..23ecce16 100755
+--- a/drivers/input/touchscreen/mediatek/mtk_tpd.c
++++ b/drivers/input/touchscreen/mediatek/mtk_tpd.c
+@@ -70,12 +70,20 @@ void tpd_get_dts_info(void)
+ 	node1 = of_find_compatible_node(NULL,NULL,"mediatek, TPD");
+ 	if(node1) {
+ 		of_property_read_u32(node1,"use-tpd-button",&tpd_dts_data.use_tpd_button);
++		printk("[tpd]use-tpd-button = %d\n", tpd_dts_data.use_tpd_button);
+ 		of_property_read_u32_array(node1,"tpd-resolution",tpd_dts_data.tpd_resolution,ARRAY_SIZE(tpd_dts_data.tpd_resolution));
+ 		if(tpd_dts_data.use_tpd_button){
+ 			of_property_read_u32(node1,"tpd-key-num",&tpd_dts_data.tpd_key_num);
+ 			of_property_read_u32_array(node1,"tpd-key-local",tpd_dts_data.tpd_key_local,ARRAY_SIZE(tpd_dts_data.tpd_key_local));
+ 			of_property_read_u32_array(node1,"tpd-key-dim-local",key_dim_local,ARRAY_SIZE(key_dim_local));
+ 			memcpy(tpd_dts_data.tpd_key_dim_local,key_dim_local, sizeof(key_dim_local));
++			
++			for(i = 0;i<4; i++){
++				printk("[tpd]tpd_dts_data.tpd_key_dim_local[%d].key_x = %d\n", i,tpd_dts_data.tpd_key_dim_local[i].key_x);
++				printk("[tpd]tpd_dts_data.tpd_key_dim_local[%d].key_y = %d\n", i,tpd_dts_data.tpd_key_dim_local[i].key_y);
++				printk("[tpd]tpd_dts_data.tpd_key_dim_local[%d].key_W = %d\n", i,tpd_dts_data.tpd_key_dim_local[i].key_width);
++				printk("[tpd]tpd_dts_data.tpd_key_dim_local[%d].key_H = %d\n", i,tpd_dts_data.tpd_key_dim_local[i].key_height);
++			}
+ 		}
+ 		
+ 	} else {
+@@ -85,6 +93,7 @@ void tpd_get_dts_info(void)
+ }
+ void tpd_gpio_as_int(int pin)
+ {
++	printk("[tpd]tpd_gpio_as_int\n");
+ 	//printk("[tpd] fwq before  chage   gpio eint pin mode=%d\n",mt_get_gpio_mode(GPIO_CTP_EINT_PIN));
+ 	//printk("[tpd] fwq before  chage   gpio rst pin mode=%d\n",mt_get_gpio_mode(GPIO_CTP_RST_PIN));
+ 	if(pin==1){
+@@ -98,6 +107,7 @@ void tpd_gpio_as_int(int pin)
+ }
+ void tpd_gpio_output(int pin, int level)
+ {
++	printk("[tpd]tpd_gpio_output pin = %d, level = %d\n", pin, level);
+ 	//printk("[tpd] fwq before  chage   gpio eint pin mode=%d\n",mt_get_gpio_mode(GPIO_CTP_EINT_PIN));
+ 	//printk("[tpd] fwq before  chage   gpio rst pin mode=%d\n",mt_get_gpio_mode(GPIO_CTP_RST_PIN));
+ 	if(pin==1){
+@@ -115,6 +125,7 @@ void tpd_gpio_output(int pin, int level)
+ int tpd_get_gpio_info(struct platform_device *pdev)
+ {
+ 	int ret;
++	printk("[tpd %d] mt_tpd_pinctrl+++++++++++++++++\n",pdev->id);
+ 	
+ 	pinctrl1 = devm_pinctrl_get(&pdev->dev);
+ 	if (IS_ERR(pinctrl1)) {
+@@ -156,6 +167,7 @@ int tpd_get_gpio_info(struct platform_device *pdev)
+ 		  dev_err(&pdev->dev, "fwq Cannot find touch pinctrl state_rst_output1!\n");
+ 		  return ret;
+ 	}
++	printk("[tpd%d] mt_tpd_pinctrl----------\n",pdev->id);
+ }
+ #endif
+ static int tpd_misc_open(struct inode *inode, struct file *file)
+@@ -376,6 +388,8 @@ static struct notifier_block tpd_fb_notifier;
+ /* use fb_notifier */
+ static int tpd_fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
+ {
++	TPD_DMESG("tpd_fb_notifier_callback\n");
++
+ 	struct fb_event *evdata = data;
+ 	int blank;
+ 	int i;
+@@ -385,13 +399,16 @@ static int tpd_fb_notifier_callback(struct notifier_block *self, unsigned long e
+ 		return 0;
+ 
+ 	blank = *(int *)evdata->data;
++	TPD_DMESG("fb_notify(blank=%d)\n", blank);
+ 	switch (blank) {
+ 	case FB_BLANK_UNBLANK:
++		TPD_DMESG("LCD ON Notify\n");
+ 		if (g_tpd_drv && tpd_suspend_flag) 
+ 			g_tpd_drv->resume(NULL);
+ 		tpd_suspend_flag = 0;
+ 		break;
+ 	case FB_BLANK_POWERDOWN:
++		TPD_DMESG("LCD OFF Notify\n");
+ 		if (g_tpd_drv) g_tpd_drv->suspend(NULL);
+ 		tpd_suspend_flag = 1;
+ 		break;
+@@ -407,6 +424,7 @@ int tpd_driver_add(struct tpd_driver_t *tpd_drv)
+ 	int i;
+ 
+ 	if (g_tpd_drv != NULL) {
++		TPD_DMESG("touch driver exist\n");
+ 		return -1;
+ 	}
+ 	/* check parameter */
+@@ -482,6 +500,7 @@ static int tpd_probe(struct platform_device *pdev)
+ {
+ 	int touch_type = 1;	/* 0:R-touch, 1: Cap-touch */
+ 	int i = 0;
++	TPD_DMESG("enter %s, %d\n", __func__, __LINE__);
+ 	/* Select R-Touch */
+ 	/* if(g_tpd_drv == NULL||tpd_load_status == 0) */
+ #if 0
+@@ -536,6 +555,8 @@ static int tpd_probe(struct platform_device *pdev)
+ #endif     
+     }
+ 
++	printk("mtk_tpd: TPD_RES_X = %d, TPD_RES_Y = %d\n", TPD_RES_X, TPD_RES_Y);
++
+ 	tpd_mode = TPD_MODE_NORMAL;
+ 	tpd_mode_axis = 0;
+ 	tpd_mode_min = TPD_RES_Y / 2;
+@@ -562,6 +583,8 @@ static int tpd_probe(struct platform_device *pdev)
+ 			tpd_driver_list[i].tpd_local_init();
+ 			/* msleep(1); */
+ 			if (tpd_load_status == 1) {
++				TPD_DMESG("[mtk-tpd]tpd_probe, tpd_driver_name=%s\n",
++					  tpd_driver_list[i].tpd_device_name);
+ 				g_tpd_drv = &tpd_driver_list[i];
+ 				v_set_dev_name(2, g_tpd_drv->tpd_device_name);
+ 				break;
+@@ -575,6 +598,7 @@ static int tpd_probe(struct platform_device *pdev)
+ 			/* touch_type:0: r-touch, 1: C-touch */
+ 			touch_type = 0;
+ 			g_tpd_drv->tpd_local_init();
++			TPD_DMESG("[mtk-tpd]Generic touch panel driver\n");
+ 		} else {
+ 			TPD_DMESG("[mtk-tpd]cap touch and Generic touch both are not loaded!!\n");
+ 			return 0;
+@@ -624,6 +648,7 @@ static int tpd_probe(struct platform_device *pdev)
+ 		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MINOR, 0, 100, 0, 0);
+ #endif /* CONFIG_MTK_S3320 */
+ #endif
++		TPD_DMESG("Cap touch panel driver\n");
+ 	}
+ /* #endif */
+ #if 0				/* linux kernel update from 2.6.35 --> 3.0 */
+@@ -696,6 +721,7 @@ static int tpd_remove(struct platform_device *pdev)
+ /* called when loaded into kernel */
+ static int __init tpd_device_init(void)
+ {
++	printk("MediaTek touch panel driver init\n");
+ #if defined(CONFIG_MTK_LEGACY)
+ #ifdef CONFIG_OF
+ 	if(platform_device_register(&tpd_device)!=0) {
+@@ -714,6 +740,7 @@ static int __init tpd_device_init(void)
+ /* should never be called */
+ static void __exit tpd_device_exit(void)
+ {
++	TPD_DMESG("MediaTek touch panel driver exit\n");
+ 	/* input_unregister_device(tpd->dev); */
+ 	platform_driver_unregister(&tpd_driver);
+ #ifdef CONFIG_HAS_EARLYSUSPEND
+diff --git a/drivers/input/touchscreen/mediatek/tpd_debug.c b/drivers/input/touchscreen/mediatek/tpd_debug.c
+index 2516bba3..52370cbe 100644
+--- a/drivers/input/touchscreen/mediatek/tpd_debug.c
++++ b/drivers/input/touchscreen/mediatek/tpd_debug.c
+@@ -252,12 +252,14 @@ static int tpd_debug_log_open(struct inode *inode, struct file *file)
+ 	spin_lock_init(&tpd_buf.buffer_lock);
+ 
+ 	file->private_data = &tpd_buf;
++	printk("[tpd_em_log]: open log file\n");
+ 	return 0;
+ }
+ 
+ static int tpd_debug_log_release(struct inode *inode, struct file *file)
+ {
+ 	/* struct tpd_debug_log_buf *tpd_buf = (tpd_debug_log_buf *)file->private_data; */
++	printk("[tpd_em_log]: close log file\n");
+ 	vfree(tpd_buf.buffer);
+ 	/* free(tpd_buf); */
+ 	return 0;
+@@ -476,6 +478,7 @@ static int __init tpd_log_init(void)
+ 		printk("[tpd_em_log] :register device failed\n");
+ 		return -1;
+ 	}
++	printk("[tpd_em_log] :register device successfully\n");
+ 	return 0;
+ }
+ 
+diff --git a/drivers/irqchip/irq-mt-eic.c b/drivers/irqchip/irq-mt-eic.c
+index 7c50d59d..ad508cda 100644
+--- a/drivers/irqchip/irq-mt-eic.c
++++ b/drivers/irqchip/irq-mt-eic.c
+@@ -1150,6 +1150,7 @@ void mt_eint_registration(unsigned int eint_num, unsigned int flag,
+ 			  unsigned int is_auto_umask)
+ {
+ 	if (eint_num < EINT_MAX_CHANNEL) {
++		pr_notice("eint register for %d\n", eint_num);
+ 		spin_lock(&eint_lock);
+ 		mt_eint_mask(eint_num);
+ 
+@@ -1270,51 +1271,67 @@ int get_eint_attribute(char *name, unsigned int name_len, unsigned int type,
+ 	int ret = 0;
+ 	int *sim_info = (int *)result;
+ 
++	pr_notice("query info: name:%s, type:%d, len:%d\n", name, type, name_len);
+ 	if (len == NULL || name == NULL || result == NULL)
+ 		return ERR_SIM_HOT_PLUG_NULL_POINTER;
+ 
+ 	for (i = 0; i < md_sim_counter; i++) {
++		pr_notice("compare string:%s\n", md_sim_info[i].name);
+ 		if (!strncmp(name, md_sim_info[i].name, name_len)) {
+ 			switch (type) {
+ 			case SIM_HOT_PLUG_EINT_NUMBER:
+ 				*len = sizeof(md_sim_info[i].eint_num);
+ 				memcpy(sim_info, &md_sim_info[i].eint_num,
+ 				       *len);
++				pr_notice("[EINT]eint_num:%d\n",
++				       md_sim_info[i].eint_num);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_DEBOUNCETIME:
+ 				*len = sizeof(md_sim_info[i].eint_deb);
+ 				memcpy(sim_info, &md_sim_info[i].eint_deb,
+ 				       *len);
++				pr_notice("[EINT]eint_deb:%d\n",
++				       md_sim_info[i].eint_deb);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_POLARITY:
+ 				*len = sizeof(md_sim_info[i].eint_pol);
+ 				memcpy(sim_info, &md_sim_info[i].eint_pol,
+ 				       *len);
++				pr_notice("[EINT]eint_pol:%d\n",
++				       md_sim_info[i].eint_pol);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_SENSITIVITY:
+ 				*len = sizeof(md_sim_info[i].eint_sens);
+ 				memcpy(sim_info, &md_sim_info[i].eint_sens,
+ 				       *len);
++				pr_notice("[EINT]eint_sens:%d\n",
++				       md_sim_info[i].eint_sens);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_SOCKETTYPE:
+ 				*len = sizeof(md_sim_info[i].socket_type);
+ 				memcpy(sim_info, &md_sim_info[i].socket_type,
+ 				       *len);
++				pr_notice("[EINT]socket_type:%d\n",
++				       md_sim_info[i].socket_type);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_DEDICATEDEN:
+ 				*len = sizeof(md_sim_info[i].dedicatedEn);
+ 				memcpy(sim_info, &md_sim_info[i].dedicatedEn,
+ 				       *len);
++				pr_notice("[EINT]dedicatedEn:%d\n",
++				       md_sim_info[i].dedicatedEn);
+ 				break;
+ 
+ 			case SIM_HOT_PLUG_EINT_SRCPIN:
+ 				*len = sizeof(md_sim_info[i].srcPin);
+ 				memcpy(sim_info, &md_sim_info[i].srcPin, *len);
++				pr_notice("[EINT]srcPin:%d\n",
++				       md_sim_info[i].srcPin);
+ 				break;
+ 
+ 			default:
+@@ -1389,6 +1406,9 @@ static void setup_MD_eint(void)
+ #ifdef CUST_EINT_MD1_0_SRCPIN
+ 	md_sim_info[md_sim_counter].srcPin = CUST_EINT_MD1_0_SRCPIN;
+ #endif
++	pr_notice("[EINT] MD1 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD1 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD1_1_NAME)
+@@ -1405,6 +1425,9 @@ static void setup_MD_eint(void)
+ #ifdef CUST_EINT_MD1_1_SRCPIN
+ 	md_sim_info[md_sim_counter].srcPin = CUST_EINT_MD1_1_SRCPIN;
+ #endif
++	pr_notice("[EINT] MD1 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD1 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD1_2_NAME)
+@@ -1421,6 +1444,9 @@ static void setup_MD_eint(void)
+ #ifdef CUST_EINT_MD1_2_SRCPIN
+ 	md_sim_info[md_sim_counter].srcPin = CUST_EINT_MD1_2_SRCPIN;
+ #endif
++	pr_notice("[EINT] MD1 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD1 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD1_3_NAME)
+@@ -1437,6 +1463,9 @@ static void setup_MD_eint(void)
+ #ifdef CUST_EINT_MD1_3_SRCPIN
+ 	md_sim_info[md_sim_counter].srcPin = CUST_EINT_MD1_3_SRCPIN;
+ #endif
++	pr_notice("[EINT] MD1 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD1 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD1_4_NAME)
+@@ -1447,6 +1476,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD1_4_DEBOUNCE_CN;
++	pr_notice("[EINT] MD1 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD1 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ 
+@@ -1458,6 +1490,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD2_0_DEBOUNCE_CN;
++	pr_notice("[EINT] MD2 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD2 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD2_1_NAME)
+@@ -1468,6 +1503,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD2_1_DEBOUNCE_CN;
++	pr_notice("[EINT] MD2 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD2 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD2_2_NAME)
+@@ -1478,6 +1516,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD2_2_DEBOUNCE_CN;
++	pr_notice("[EINT] MD2 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD2 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD2_3_NAME)
+@@ -1488,6 +1529,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD2_3_DEBOUNCE_CN;
++	pr_notice("[EINT] MD2 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD2 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #if defined(CUST_EINT_MD2_4_NAME)
+@@ -1498,6 +1542,9 @@ static void setup_MD_eint(void)
+ 	md_sim_info[md_sim_counter].socket_type =
+ 	    get_type(md_sim_info[md_sim_counter].name);
+ 	md_sim_info[md_sim_counter].eint_deb = CUST_EINT_MD2_4_DEBOUNCE_CN;
++	pr_notice("[EINT] MD2 name = %s\n", md_sim_info[md_sim_counter].name);
++	pr_notice("[EINT] MD2 type = %d\n",
++	       md_sim_info[md_sim_counter].socket_type);
+ 	md_sim_counter++;
+ #endif
+ #endif /* end of MD_EINT */
+@@ -1528,7 +1575,10 @@ static irqreturn_t mt_eint_soft_revert_isr(unsigned irq, struct irq_desc *desc)
+ {
+ 	int eint_num = 0;
+ 	eint_num = DEMUX_EINT_IRQ(irq);
++	pr_notice("======EINT_SOFT_REVERT_ISR======\n");
++	pr_notice("EINT %d, in %s\n", eint_num, __func__);
+ 	mt_eint_revert_polarity(eint_num);
++	pr_notice("======EINT_SOFT_REVERT_ISR_END======\n");
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -1539,7 +1589,10 @@ static irqreturn_t mt_eint_soft_debounce_isr(unsigned irq,
+ {
+ 	int eint_num = 0;
+ 	eint_num = DEMUX_EINT_IRQ(irq);
++	pr_notice("======EINT_SOFT_DEBOUNCE_ISR======\n");
++	pr_notice("EINT %d, in %s\n", eint_num, __func__);
+ 	mt_eint_revert_polarity(eint_num);
++	pr_notice("======EINT_SOFT_DEBOUNCE_ISR_END======\n");
+ 	sw_debounce = 1;
+ 	return IRQ_HANDLED;
+ }
+@@ -1549,8 +1602,11 @@ static irqreturn_t mt_eint_soft_nonauto_unmask_isr(unsigned irq,
+ {
+ 	int eint_num = 0;
+ 	eint_num = DEMUX_EINT_IRQ(irq);
++	pr_notice("======EINT_NONAUTO_SOFT_ISR======\n");
++	pr_notice("EINT %d, in %s\n", eint_num, __func__);
+ 	mt_eint_revert_polarity(eint_num);
+ 	disable_irq_nosync(irq);
++	pr_notice("======EINT_NONAUTO_SOFT_ISR_END======\n");
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -1569,6 +1625,9 @@ static irqreturn_t mt_eint_hw_debounce_isr(unsigned irq, struct irq_desc *desc)
+ 	eint_num = DEMUX_EINT_IRQ(irq);
+ 	hw_debounce_end = sched_clock();
+ 	EINT_waiting = 0;
++	pr_notice("======EINT_HW_DEBOUNCE_ISR======\n");
++	pr_notice("EINT %d, in %s\n", eint_num, __func__);
++	pr_notice("======EINT_HW_DEBOUNCE_ISR_END======\n");
+ 	mt_set_gpio_out(gpio_debounce[EINT_OUT], 0);
+ 	return IRQ_HANDLED;
+ }
+@@ -1615,6 +1674,7 @@ static void mt_eint_autounmask_test(void)
+ {
+ 	int ret = 0;
+ 	struct irq_desc *desc;
++	pr_notice("%s for EINT %d\n", __func__, eint_num);
+ 	setup_level_trigger_env(eint_num);
+ 	ret =
+ 	    request_irq(EINT_IRQ(eint_num),
+@@ -1626,13 +1686,19 @@ static void mt_eint_autounmask_test(void)
+ 		return;
+ 	}
+ 	desc = irq_to_desc(EINT_IRQ(eint_num));
++	pr_notice("EINT %d request_irq done\n", eint_num);
+ 	mt_eint_revert_polarity(eint_num);
++	pr_notice("trigger EINT %d done\n", eint_num);
++	pr_notice("EINT %d, MASK 0x%d\n", eint_num, mt_eint_get_mask(eint_num));
+ 	free_irq(EINT_IRQ(eint_num), NULL);
+ }
+ 
+ static irqreturn_t mt_deint_soft_revert_isr(unsigned irq, struct irq_desc *desc)
+ {
++	pr_notice("======DEINT_SOFT_REVERT_ISR======\n");
++	pr_notice("irq = %d\n", irq);
+ 	irq_set_irq_type(irq, IRQF_TRIGGER_HIGH);
++	pr_notice("======DEINT_SOFT_REVERT_ISR_END======\n");
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -1640,8 +1706,11 @@ static void mt_deint_test(void)
+ {
+ 	int ret = 0;
+ 
++	pr_notice("%s for EINT %d\n", __func__, eint_num);
++
+ 	ret = mt_eint_set_deint(eint_num, 189);
+ 	if (ret == 0) {
++		pr_notice("mt_eint_set_deint done\n");
+ 	} else {
+ 		pr_err("mt_eint_set_deint fail\n");
+ 		return;
+@@ -1654,8 +1723,12 @@ static void mt_deint_test(void)
+ 		pr_err("EINT IRQ LINE NOT AVAILABLE!!\n");
+ 		return;
+ 	}
++	pr_notice("EINT %d request_irq done\n", eint_num);
+ 	irq_set_irq_type(189, IRQF_TRIGGER_LOW);
+ 
++	pr_notice("trigger EINT %d done\n", eint_num);
++	pr_notice("EINT %d, MASK 0x%d\n", eint_num, mt_eint_get_mask(eint_num));
++
+ 	free_irq(189, NULL);
+ 	mt_eint_clr_deint(eint_num);
+ }
+@@ -1666,6 +1739,7 @@ static int mt_eint_non_autounmask_test(void)
+ 
+ 	setup_level_trigger_env(eint_num);
+ 	EINT_FUNC.eint_func[eint_num] = NULL;
++	pr_notice("%s for EINT %d\n", __func__, eint_num);
+ 	ret =
+ 	    request_irq(EINT_IRQ(eint_num),
+ 			(irq_handler_t) mt_eint_soft_nonauto_unmask_isr,
+@@ -1675,7 +1749,10 @@ static int mt_eint_non_autounmask_test(void)
+ 		pr_err("EINT IRQ LINE NOT AVAILABLE!!\n");
+ 		return -1;
+ 	}
++	pr_notice("EINT %d request_irq done\n", eint_num);
+ 	mt_eint_revert_polarity(eint_num);
++	pr_notice("trigger EINT %d done\n", eint_num);
++	pr_notice("EINT %d, MASK 0x%d\n", eint_num, mt_eint_get_mask(eint_num));
+ 	free_irq(EINT_IRQ(eint_num), NULL);
+ 	return 1;
+ }
+@@ -1687,7 +1764,10 @@ void mt_eint_normal_test_based_on_sw_debounce(void)
+ 	unsigned int debounce_time = 30;
+ 
+ 	setup_level_trigger_env(eint_num);
++	pr_notice("%s for EINT %d\n", __func__, eint_num);
+ 	gpio_set_debounce(EINT_GPIO(eint_num), debounce_time);
++	pr_notice("EINT %d debounce enable %d\n", eint_num,
++	       mt_eint_is_debounce_en(eint_num));
+ 	ret =
+ 	    request_irq(EINT_IRQ(eint_num),
+ 			(irq_handler_t) mt_eint_soft_debounce_isr,
+@@ -1695,10 +1775,14 @@ void mt_eint_normal_test_based_on_sw_debounce(void)
+ 			NULL);
+ 	if (ret > 0)
+ 		pr_err("EINT IRQ LINE NOT AVAILABLE!!\n");
++	pr_notice("EINT %d request_irq done\n", eint_num);
+ 	mt_eint_revert_polarity(eint_num);
++	pr_notice("trigger EINT %d done\n", eint_num);
++	pr_notice("start waiting sw_debounce\n");
+ 	while (!sw_debounce)
+ 		;
+ 	sw_debounce = 0;
++	pr_notice("EINT %d, MASK 0x%d\n", eint_num, mt_eint_get_mask(eint_num));
+ 	free_irq(EINT_IRQ(eint_num), NULL);
+ }
+ 
+@@ -1708,6 +1792,7 @@ void mt_eint_normal_test_based_on_hw_debounce(void)
+ 	unsigned int debounce_time = 16;
+ 	unsigned long long delay_start;
+ 
++	pr_notice("%s for EINT %d\n", __func__, eint_debounce[EINT_IN]);
+ 	gpio_set_debounce(EINT_GPIO(eint_debounce[EINT_IN]), debounce_time);
+ 
+ 	/* GPIO setting */
+@@ -1718,6 +1803,7 @@ void mt_eint_normal_test_based_on_hw_debounce(void)
+ 	mt_set_gpio_mode(gpio_debounce[EINT_IN], GPIO_MODE_04);
+ 	mt_set_gpio_dir(gpio_debounce[EINT_IN], GPIO_DIR_IN);
+ 
++	pr_notice("before request_irq for EINT %d\n", eint_debounce[EINT_IN]);
+ 	EINT_waiting = 1;
+ 	ret =
+ 	    request_irq(EINT_IRQ(eint_debounce[EINT_IN]),
+@@ -1725,21 +1811,33 @@ void mt_eint_normal_test_based_on_hw_debounce(void)
+ 			IRQF_TRIGGER_HIGH, "EINT-HWDEBOUNCE", NULL);
+ 	if (ret > 0)
+ 		pr_err("EINT IRQ LINE NOT AVAILABLE!!\n");
++	pr_notice("EINT %d request_irq done\n", eint_debounce[EINT_IN]);
+ 	mt_set_gpio_out(gpio_debounce[EINT_OUT], 1);
++	pr_notice("trigger EINT %d done\n", eint_debounce[EINT_IN]);
+ 	hw_debounce_start = delay_start = sched_clock();
++	pr_notice("waiting for EINT %d\n", eint_debounce[EINT_IN]);
+ 
+ 	while (EINT_waiting) {
+ 		delay_start = sched_clock();
+ 		if (!EINT_waiting)
+ 			break;
+ 	}
++	pr_notice("hw_debounce time t1=%llu ,t2=%llu, %llu ns\n",
++	       hw_debounce_start, hw_debounce_end,
++	       (hw_debounce_end - hw_debounce_start));
++	pr_notice("duration time t1=%llu ,t2=%llu, %llu ns\n", hw_debounce_start,
++	       delay_start, (delay_start - hw_debounce_start));
++
+ 	/* divide by 1m => ns to ms */
+ 	if (!EINT_waiting
+ 	    && (hw_debounce_start - hw_debounce_end) / 1000000 >
+ 	    debounce_time) {
++		pr_notice("...pass\n");
+ 	} else {
+ 		pr_notice("...failed\n");
+ 	}
++	pr_notice("EINT %d, MASK 0x%d\n", eint_debounce[EINT_IN],
++	       mt_eint_get_mask(eint_debounce[EINT_IN]));
+ 	free_irq(EINT_IRQ(eint_debounce[EINT_IN]), NULL);
+ }
+ 
+@@ -1823,6 +1921,7 @@ int get_supported_irq_num(void)
+ #define GIC_DIST_CTR 0x4
+ 	ret = readl_relaxed(dist_base + GIC_DIST_CTR) & 0x1f;
+ 	ret = (ret + 1) * 32;
++	pr_notice("gic supported max = %d\n", ret);
+ 	return ret;
+ }
+ 
+@@ -1903,6 +2002,7 @@ static void pin_traverse(void)
+ 
+ 	for (r = rb_first(&root); r; r = rb_next(r)) {
+ 		p = rb_entry(r, struct pin_node, node);
++		pr_notice("gpio = %d, eint = %d\n", p->gpio_pin, p->eint_pin);
+ 	}
+ }
+ #endif
+@@ -2010,6 +2110,7 @@ static int __init mt_eint_init(void)
+ 	node = of_find_compatible_node(NULL, NULL, "mtk,mt-eic");
+ 	if (node) {
+ 		EINT_BASE = of_iomap(node, 0);
++		pr_notice("get EINT_BASE @ %p\n", EINT_BASE);
+ 	} else {
+ 		pr_err("can't find compatible node\n");
+ 		return -1;
+@@ -2072,6 +2173,7 @@ static int __init mt_eint_init(void)
+ 	}
+ 
+ 	if (of_property_read_u32(node, "max_deint_cnt", &MAX_DEINT_CNT)) {
++		pr_warn("[EIC] no max_deint_cnt specified\n");
+ 	} else {
+ 		deint_possible_irq =
+ 		    kzalloc(sizeof(u32) * MAX_DEINT_CNT, GFP_KERNEL);
+@@ -2093,6 +2195,7 @@ static int __init mt_eint_init(void)
+ 	}
+ 
+ 	if (of_property_read_u32(node, "builtin_entry", &builtin_entry)) {
++		pr_warn("[EIC] no builtin_entry property\n");
+ 	} else {
+ 		builtin_mapping = kzalloc(sizeof(struct builtin_eint)*builtin_entry, GFP_KERNEL);
+ 		if (!builtin_mapping) {
+@@ -2106,6 +2209,8 @@ static int __init mt_eint_init(void)
+ 		}
+ 		len /= sizeof(*spec);
+ 
++		pr_warn("[EIC] builtin_mapping: spec=%d, len=%d\n", be32_to_cpup(spec), len);
++
+ 		for (i = 0; i < builtin_entry ; ++i) {
+ 			builtin_mapping[i].gpio = be32_to_cpup(spec+(i*3));
+ 			builtin_mapping[i].func_mode = be32_to_cpup(spec+(i*3)+1);
+@@ -2138,10 +2243,18 @@ static int __init mt_eint_init(void)
+ #if defined(EINT_TEST_V2)
+ 		pin_traverse();
+ 		p = pin_search(31);
++		if (p)
++			pr_notice("gpio 31 = eint %d\n", p->eint_pin);
+ 
+ 		p = pin_search(37);
++		if (p)
++			pr_notice("gpio 37 = eint %d\n", p->eint_pin);
+ 
+ 		p = pin_search(GPIO_MAX);
++		if (p)
++			pr_notice("gpio GPIO_MAX = eint %d\n", p->eint_pin);
++		else
++			pr_notice("can't find for GPIO %d\n", GPIO_MAX);
+ #endif
+ 	}
+ 
+@@ -2151,6 +2264,7 @@ static int __init mt_eint_init(void)
+ 		pr_err("get_supported_irq_num returns %d\n", EINT_IRQ_BASE);
+ 		return -1;
+ 	}
++	pr_notice("EINT_IRQ_BASE = %d\n", EINT_IRQ_BASE);
+ 	irq_base =
+ 	    irq_alloc_descs(EINT_IRQ_BASE, EINT_IRQ_BASE, EINT_MAX_CHANNEL,
+ 			    numa_node_id());
+@@ -2186,6 +2300,7 @@ static int __init mt_eint_init(void)
+ 	node = of_find_compatible_node(NULL, NULL, "mediatek, ACCDET-eint");
+ 	if (node) {
+ 		i = irq_of_parse_and_map(node, 0);
++		pr_notice("virq for ACCDET = %d\n", i);
+ 	} else {
+ 		pr_err("can't find compatible node for ACCDET\n");
+ 	}
+@@ -2194,6 +2309,7 @@ static int __init mt_eint_init(void)
+ 	    of_find_compatible_node(NULL, NULL, "mediatek, TOUCH_PANEL-eint");
+ 	if (node) {
+ 		i = irq_of_parse_and_map(node, 0);
++		pr_notice("virq for TOUCH = %d\n", i);
+ 	} else {
+ 		pr_err("can't find compatible node for TOUCH\n");
+ 	}
+@@ -2262,6 +2378,9 @@ void mt_eint_dump_status(unsigned int eint)
+ {
+ 	if (eint >= EINT_MAX_CHANNEL)
+ 		return;
++	pr_notice("[EINT] eint:%d,mask:%x,pol:%x,deb:%x,sens:%x\n", eint,
++	       mt_eint_get_mask(eint), mt_eint_get_polarity(eint),
++	       mt_eint_get_debounce_cnt(eint), mt_eint_get_sens(eint));
+ }
+ #endif
+ 
+@@ -2272,11 +2391,13 @@ void mt_eint_print_status(void)
+ {
+ 	unsigned int status, index;
+ 	unsigned int offset, reg_base, status_check;
++	pr_notice("EINT_STA:");
+ 	for (reg_base = 0; reg_base < EINT_MAX_CHANNEL; reg_base += 32) {
+ 		/* read status register every 32 interrupts */
+ 		status = mt_eint_get_status(reg_base);
+-		if (status) {
+-        }else
++		if (status)
++			pr_notice("EINT Module - index:%d,EINT_STA = 0x%x\n", reg_base, status);
++		else
+ 			continue;
+ 
+ 		for (offset = 0; offset < 32; offset++) {
+@@ -2286,12 +2407,14 @@ void mt_eint_print_status(void)
+ 
+ 			status_check = status & (1 << offset);
+ 			if (status_check) {
++				pr_notice("EINT %d is pending\n", index);
+ #if (EINT_DEBUG == 1)
+ 				mt_eint_dump_status(index);
+ #endif
+ 			}
+ 		}
+ 	}
++	pr_notice("\n");
+ }
+ EXPORT_SYMBOL(mt_eint_print_status);
+ 

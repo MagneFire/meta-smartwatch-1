@@ -1,0 +1,51 @@
+From 2128255510793cfa569179a7cb2d4f01f2e8a208 Mon Sep 17 00:00:00 2001
+From: MagneFire <IDaNLContact@gmail.com>
+Date: Mon, 14 Sep 2020 23:09:18 +0200
+Subject: [PATCH] Workaround KW88 Pro touch issue.
+
+---
+ .../mediatek/focaltech_all/focaltech_core.c   | 21 +++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c b/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
+index 0e03dfd9..6c6a79a2 100755
+--- a/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
++++ b/drivers/input/touchscreen/mediatek/focaltech_all/focaltech_core.c
+@@ -778,6 +778,7 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
+ 	/*get the number of the touch points*/
+ 
+ 	point_num= data[2] & 0x0f;
++	printk(" tpd point_num = %d\n", point_num);
+ 	
+ 	for(i = 0; i < point_num; i++)  
+ 	{
+@@ -794,6 +795,26 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
+ 		high_byte &= 0x0f00;
+ 		low_byte = data[3+6*i+3];
+ 		cinfo->y[i] = high_byte |low_byte;
++		printk(" tpd cinfo->x[%d] = %d, cinfo->y[%d] = %d, cinfo->p[%d] = %d\n", i , cinfo->x[i], i, cinfo->y[i], i, cinfo->p[i]);
++	}
++
++
++	// HACKS HERE
++	if (point_num == 1) {
++		cinfo->p[i+1] = data[3+6*i] >> 6; //event flag 
++		cinfo->id[i+1] = data[3+6*i+2]>>4; //touch id
++	   	/*get the X coordinate, 2 bytes*/
++		high_byte = data[3+6*i];
++		high_byte <<= 8;
++		high_byte &= 0x0f00;
++		low_byte = data[3+6*i + 1];
++		cinfo->x[i+1] = high_byte |low_byte;	
++		high_byte = data[3+6*i+2];
++		high_byte <<= 8;
++		high_byte &= 0x0f00;
++		low_byte = data[3+6*i+3];
++		cinfo->y[i+1] = high_byte |low_byte;
++		point_num ++;
+ 	}
+ 
+ 	//printk(" tpd cinfo->x[0] = %d, cinfo->y[0] = %d, cinfo->p[0] = %d\n", cinfo->x[0], cinfo->y[0], cinfo->p[0]);
+-- 
+2.28.0
+

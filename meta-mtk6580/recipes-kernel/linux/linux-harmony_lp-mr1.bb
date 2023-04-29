@@ -23,6 +23,9 @@ SRC_URI = "git://github.com/OpenWatchProject/android_kernel_mediatek_mt6580;prot
     file://0011-sec_dev-Fix-firmware-loading.patch \
     file://0012-Disable-new-gcc-7.1.1-warnings.patch \
     file://0013-ARM-uaccess-remove-put_user-code-duplication.patch \
+    file://0014-Revert-Reduce-kernel-verbosity.patch \
+    file://0015-Workaround-KW88-Pro-touch-issue.patch \
+    file://0016-FTS2A052-Remove-missing-include-file.patch \
     "
 SRC_URI:append:inharmony = "file://inharmonyconfig"
 

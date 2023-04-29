@@ -1,0 +1,236 @@
+From 3e015597a648a5949d211629c2f52dcf8fdc9240 Mon Sep 17 00:00:00 2001
+From: MagneFire <IDaNLContact@gmail.com>
+Date: Wed, 16 Sep 2020 23:13:53 +0200
+Subject: [PATCH] FTS2A052: Remove missing include file.
+
+---
+ .../mediatek/FTS2A052/fts2a052_driver.c       |  6 +--
+ .../mediatek/FTS2A052/fts2a052_driver.h       |  4 +-
+ .../mediatek/GT818B-fpga/gt818b_driver.c      | 10 ++--
+ .../mediatek/ft5x0x/ft5x0x_driver.c           | 46 +++++++++++++++++-
+ .../mediatek/ft5x0x/tpd_custom_ft5x0x.h       | 47 +++++++++++++++++++
+ 5 files changed, 101 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/input/touchscreen/mediatek/ft5x0x/tpd_custom_ft5x0x.h
+
+diff --git a/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.c b/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.c
+index f6a276ff..7111ab7c 100644
+--- a/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.c
++++ b/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.c
+@@ -59,7 +59,7 @@
+ 
+ #include "tpd.h"
+ #include "fts2a052_driver.h"
+-#include "tpd_custom_fts2a052.h"
++//#include "tpd_custom_fts2a052.h"
+ #if 0
+ #ifdef MT6589
+ 	extern void mt65xx_eint_unmask(unsigned int line);
+@@ -107,7 +107,7 @@ static unsigned int		 code_config_version;
+ static unsigned int		chip_afe1_version;
+ static unsigned int		chip_afe0_version;
+ 
+-#if 0 //define in tpd_custom_fts2a052.h
++//#if 0 //define in tpd_custom_fts2a052.h
+ #define TPD_HAVE_BUTTON
+ 
+ #define TPD_KEY_COUNT		3
+@@ -115,7 +115,7 @@ static unsigned int		chip_afe0_version;
+ #define TPD_KEYS_DIM            {{200,1980,100,80},\
+ 				 {500,1980,100,80},\
+ 				 {800,1980,100,80}}
+-#endif
++//#endif
+ 
+ #ifdef TPD_HAVE_BUTTON 
+ static int tpd_keys_local[TPD_KEY_COUNT] = TPD_KEYS;
+diff --git a/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.h b/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.h
+index ad790307..f161e843 100644
+--- a/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.h
++++ b/drivers/input/touchscreen/mediatek/FTS2A052/fts2a052_driver.h
+@@ -24,12 +24,12 @@
+ #define FTS_FIFO_MAX                        32
+ #define FTS_EVENT_SIZE                      8
+ #define READ_EVENT_SIZE			    3
+-#if 0 //define in tpd_custom_fts2a052.h
++//#if 0 //define in tpd_custom_fts2a052.h
+ #define X_AXIS_MAX                          1080
+ #define X_AXIS_MIN                          0
+ #define Y_AXIS_MAX                          1920
+ #define Y_AXIS_MIN                          0
+-#endif
++//#endif
+ #define PRESSURE_MIN                        0
+ #define PRESSURE_MAX                        127
+ 
+diff --git a/drivers/input/touchscreen/mediatek/GT818B-fpga/gt818b_driver.c b/drivers/input/touchscreen/mediatek/GT818B-fpga/gt818b_driver.c
+index 9dda14c6..52de2c86 100644
+--- a/drivers/input/touchscreen/mediatek/GT818B-fpga/gt818b_driver.c
++++ b/drivers/input/touchscreen/mediatek/GT818B-fpga/gt818b_driver.c
+@@ -23,11 +23,11 @@
+ #include <linux/proc_fs.h>
+ #include <asm/uaccess.h>
+ 
+-#include "tpd_custom_GT818B.h"
++//#include "tpd_custom_GT818B.h"
+ #include <mach/mt_pm_ldo.h>
+ #include <mach/mt_typedefs.h>
+ #include <mach/mt_boot.h>
+-#include "tpd_custom_GT818B.h"
++//#include "tpd_custom_GT818B.h"
+ #include <mach/mt_pm_ldo.h>
+ #include <mach/mt_typedefs.h>
+ #include <mach/mt_boot.h>
+@@ -114,7 +114,7 @@ int esd_checked_time = 0;
+ #define TPD_MAX_POINTS          5
+ #define MAX_TRANSACTION_LENGTH 8
+ #define I2C_DEVICE_ADDRESS_LEN 2
+-#define I2C_MASTER_CLOCK       100       //400 ·¢ÏÖÔÚÖÐ¶ÏÖÐIIC×ÊÔ´»áÉêÇë²»³É¹¦
++#define I2C_MASTER_CLOCK       100       //400 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½IICï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ë²»ï¿½É¹ï¿½
+ 
+ //#define TPD_X_RES 480
+ //#define TPD_Y_RES 800
+@@ -1228,7 +1228,7 @@ static int touch_event_handler(void *unused)
+             TPD_DEBUG("[mtk-tpd] tpd=%x,  tpd->dev=%x\n",tpd, tpd->dev );
+             continue;
+         }
+-        if ( (buf_status&0x30) != 0x20 )        //data not ready£¬so return
++        if ( (buf_status&0x30) != 0x20 )        //data not readyï¿½ï¿½so return
+         {
+             TPD_DEBUG("[mtk-tpd] STATUS : %x\n", buffer[0]);
+             TPD_DEBUG("[mtk-tpd] data not ready return \n");
+@@ -1286,7 +1286,7 @@ static int touch_event_handler(void *unused)
+             continue;
+         }
+ 		    
+-        if ( finger_num > 5 )        //abnormal state £¬so return
++        if ( finger_num > 5 )        //abnormal state ï¿½ï¿½so return
+         {
+             TPD_DMESG("[mtk-tpd] finger_num =%d abnormal state  !\n",finger_num);
+ 			TPD_DMESG("[mtk-tpd] STATUS  : %x\n", buffer[0]);
+diff --git a/drivers/input/touchscreen/mediatek/ft5x0x/ft5x0x_driver.c b/drivers/input/touchscreen/mediatek/ft5x0x/ft5x0x_driver.c
+index f110456c..9a90982f 100644
+--- a/drivers/input/touchscreen/mediatek/ft5x0x/ft5x0x_driver.c
++++ b/drivers/input/touchscreen/mediatek/ft5x0x/ft5x0x_driver.c
+@@ -537,7 +537,27 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ #endif 
+ 
+ #ifdef TPD_POWER_SOURCE_CUSTOM
+-	hwPowerOn(TPD_POWER_SOURCE_CUSTOM, VOL_2800, "TP");
++	//hwPowerOn(TPD_POWER_SOURCE_CUSTOM, VOL_2800, "TP");
++	if(NULL == tpd->reg)
++	{
++		tpd->reg=regulator_get(tpd->tpd_dev,TPD_POWER_SOURCE_CUSTOM); // get pointer to regulator structure
++		if (IS_ERR(tpd->reg)) {
++			printk("touch panel regulator_get() failed!\n");
++			return;
++		}else
++		{
++			printk("regulator_get() Ok!\n");
++		}
++	}
++
++	printk("regulator_set_voltage--begin\r\n");
++	retval=regulator_set_voltage(tpd->reg, 2800000, 2800000);  // set 2.8v
++	printk("regulator_set_voltage--end\r\n");
++	if (retval)
++		printk("regulator_set_voltage() failed!\n");
++	retval=regulator_enable(tpd->reg);  //enable regulator
++	if (retval)
++		printk("regulator_enable() failed!\n");
+ #else
+ 	TPD_DMESG("mtk_tpd: power MT65XX_POWER_LDO_VGP2 \n");
+ 	hwPowerOn(MT6323_POWER_LDO_VGP2, VOL_3000, "TP");
+@@ -671,6 +691,7 @@ static int tpd_remove(struct i2c_client *client)
+ 
+ static int tpd_local_init(void)
+ {
++	int retval = TPD_OK;
+ 	TPD_DMESG("Focaltech FT5x0x I2C Touchscreen Driver (Built %s @ %s)\n", __DATE__, __TIME__);
+ 
+ 	if(i2c_add_driver(&tpd_i2c_driver)!=0)
+@@ -717,7 +738,28 @@ static int tpd_resume(struct i2c_client *client)
+ 	mt_set_gpio_out(GPIO_CTP_EN_PIN, GPIO_OUT_ONE);
+ #endif
+ #ifdef TPD_POWER_SOURCE_CUSTOM
+-	hwPowerOn(TPD_POWER_SOURCE_CUSTOM, VOL_2800, "TP");
++	//hwPowerOn(TPD_POWER_SOURCE_CUSTOM, VOL_2800, "TP");
++
++	if(NULL == tpd->reg)
++	{
++		tpd->reg=regulator_get(tpd->tpd_dev,TPD_POWER_SOURCE_CUSTOM); // get pointer to regulator structure
++		if (IS_ERR(tpd->reg)) {
++			printk("touch panel regulator_get() failed!\n");
++			return;
++		}else
++		{
++			printk("regulator_get() Ok!\n");
++		}
++	}
++
++	printk("regulator_set_voltage--begin\r\n");
++	retval=regulator_set_voltage(tpd->reg, 2800000, 2800000);  // set 2.8v
++	printk("regulator_set_voltage--end\r\n");
++	if (retval)
++		printk("regulator_set_voltage() failed!\n");
++	retval=regulator_enable(tpd->reg);  //enable regulator
++	if (retval)
++		printk("regulator_enable() failed!\n");
+ #else
+ 	hwPowerOn(MT6323_POWER_LDO_VGP2, VOL_3000, "TP");
+ #endif
+diff --git a/drivers/input/touchscreen/mediatek/ft5x0x/tpd_custom_ft5x0x.h b/drivers/input/touchscreen/mediatek/ft5x0x/tpd_custom_ft5x0x.h
+new file mode 100644
+index 00000000..3a4acaf5
+--- /dev/null
++++ b/drivers/input/touchscreen/mediatek/ft5x0x/tpd_custom_ft5x0x.h
+@@ -0,0 +1,47 @@
++ /* MediaTek Inc. (C) 2010. All rights reserved. */ 
++
++#ifndef TOUCHPANEL_H__
++#define TOUCHPANEL_H__
++
++#include <mach/mt_pm_ldo.h>
++#include <mach/mt_typedefs.h>
++#include <mach/mt_boot.h>
++#include <mach/mt_gpio.h>
++
++#include <pmic_drv.h>
++
++/* Pre-defined definition */
++#define TPD_TYPE_CAPACITIVE
++#define TPD_TYPE_RESISTIVE
++#define TPD_POWER_SOURCE_CUSTOM         	PMIC_APP_CAP_TOUCH_VDD
++//#define TPD_POWER_SOURCE MT6323_POWER_LDO_VGP2
++#define TPD_I2C_NUMBER		0
++#define TPD_WAKEUP_TRIAL	60
++#define TPD_WAKEUP_DELAY	100
++
++#define FT5X0X_I2C_ADDR		0x70
++#define GPIO_CTP_PWR_PIN	(GPIO45 | 0x80000000)
++//#define TPD_ROTATE_270
++#define TPD_AUTO_UPGRADE_SUPPORT
++//#define FT5X36_UPGADE
++//#define FTS_AUTO_UPGRADE
++#define TPD_DELAY		(2*HZ/100)
++//#define CUST_FTS_APK_DEBUG 1 
++
++
++#define TPD_RES_X		800
++#define TPD_RES_Y		1280
++
++#define TPD_HAVE_CALIBRATION
++//#define TPD_CALIBRATION_MATRIX	{962, 0, 0, 0, 1600, 0, 0, 0};
++
++#define TPD_CALIBRATION_MATRIX_ROTATION_NORMAL  {-4096, 0, 800*4096, 0, -4096, 1280*4096, 0, 0};
++#define TPD_CALIBRATION_MATRIX_ROTATION_FACTORY {-4096, 0, 800*4096, 0, -4096, 1280*4096, 0, 0};
++
++
++#define TPD_LDO_VOL		VOL_3000
++
++
++//#define TPD_HAVE_TREMBLE_ELIMINATION
++
++#endif /* TOUCHPANEL_H__ */
+-- 
+2.28.0
+
