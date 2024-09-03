@@ -9,7 +9,7 @@ on init
 
     class_start core
 
-service logd /system/bin/logd
+service logd /usr/libexec/hal-droid/system/bin/logd
     class core
     socket logd stream 0666 root root
     socket logdr seqpacket 0666 root root
@@ -18,7 +18,14 @@ service logd /system/bin/logd
 service logcat /system/bin/logcat
     class core
 
-service servicemanager /system/bin/servicemanager
+service hwservicemanager /system/bin/hwservicemanager
+    setenv LD_PRELOAD /usr/libexec/hal-droid/system/lib/libselinux_stubs.so
+
+service servicemanager /usr/libexec/hal-droid/system/bin/servicemanager
+    setenv LD_PRELOAD /usr/libexec/hal-droid/system/lib/libselinux_stubs.so
+    class core
+
+service rmt_storage /vendor/bin/rmt_storage
     class core
 
 service sensorhd /system/bin/shd
