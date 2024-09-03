@@ -2,11 +2,11 @@
 
 BOOT_DIR=$1
 
-mkdir $BOOT_DIR/nvdata
-mount -t ext4 /dev/mmcblk0p9 $BOOT_DIR/nvdata
+# mkdir $BOOT_DIR/nvdata
+# mount -t ext4 /dev/mmcblk0p9 $BOOT_DIR/nvdata
 
-mkdir $BOOT_DIR/firmware
-mount -t ext4 /dev/mmcblk0p32 $BOOT_DIR/firmware
+# mkdir $BOOT_DIR/firmware
+# mount -t ext4 /dev/mmcblk0p32 $BOOT_DIR/firmware
 
 mkdir -p /nvdata
 mkdir -p /firmware
