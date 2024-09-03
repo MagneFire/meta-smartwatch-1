@@ -8,3 +8,5 @@ do_install:append:sawfish() {
 }
 
 FILES:${PN} += "/init.machine"
+
+RDEPENDS:${PN}:append:sawfish = " msm-fb-refresher"
