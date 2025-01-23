@@ -4,6 +4,7 @@ Date: Mon, 26 Oct 2020 21:20:24 +0100
 Subject: [PATCH] HybrisAlsAdaptor: Set default delay. Fixes excessive lags on
  tetra.
 
+Upstream-Status: Inappropriate
 ---
  adaptors/hybrisalsadaptor/hybrisalsadaptor.cpp | 2 ++
  1 file changed, 2 insertions(+)

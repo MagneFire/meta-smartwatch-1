@@ -4,6 +4,7 @@ Date: Tue, 1 Dec 2020 20:24:52 +0100
 Subject: [PATCH] HybrisStepCounterAdapter: Set delay to normal speed. Fixes
  the stepcounter on at least sturgeon.
 
+Upstream-Status: Inappropriate
 ---
  adaptors/hybrisstepcounteradaptor/hybrisstepcounteradaptor.cpp | 1 +
  1 file changed, 1 insertion(+)
