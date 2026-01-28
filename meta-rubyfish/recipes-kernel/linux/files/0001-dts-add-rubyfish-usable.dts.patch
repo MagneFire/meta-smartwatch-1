@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Mon, 4 Sep 2023 14:04:59 +0000
 Subject: [PATCH] dts: add rubyfish-usable.dts
 
+Upstream-Status: Inappropriate
 ---
  arch/arm64/boot/dts/qcom/Makefile            |     1 +
  arch/arm64/boot/dts/qcom/rubyfish-usable.dts | 14181 +++++++++++++++++

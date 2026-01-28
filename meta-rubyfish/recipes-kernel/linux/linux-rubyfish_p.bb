@@ -13,6 +13,7 @@ SRC_URI = " git://github.com/mobvoi/mobvoi-ticwatch-kernel;branch=mobvoi-android
     file://img_info \
     file://0001-Makefile-don-t-make-CC-be-a-python-wrapper.patch \
     file://0001-kgsl_events.c-fix-include.patch \
+    file://0001-ARM-8933-1-replace-Sun-Solaris-style-flag-on-section.patch \
     file://0002-remove-tracepoints.patch \
     file://0003-remove-tracepoints.patch \
     file://0005-initramfs-Don-t-skip-initramfs.patch \
@@ -29,8 +30,15 @@ PV = "${LINUX_VERSION}+pie"
 S = "${WORKDIR}/git"
 B = "${S}"
 
+do_configure:prepend() {
+    install -m 644 -D ${UNPACKDIR}/defconfig ${WORKDIR}/defconfig
+}
+
 do_install:append() {
     rm -rf ${D}/usr/src/usr/
+
+    # The ..install.cmd contains references to TMPDIR
+    find ${D}/usr/src/ -name ..install.cmd | xargs rm -f
 }
 
 inherit mkboot old-kernel-gcc-hdrs

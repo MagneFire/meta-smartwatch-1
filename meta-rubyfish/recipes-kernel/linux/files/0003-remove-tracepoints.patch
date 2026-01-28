@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Sun, 3 Sep 2023 16:12:08 +0000
 Subject: [PATCH 3/3] remove tracepoints
 
+Upstream-Status: Inappropriate
 ---
  drivers/gpu/msm/Makefile | 2 --
  1 file changed, 2 deletions(-)

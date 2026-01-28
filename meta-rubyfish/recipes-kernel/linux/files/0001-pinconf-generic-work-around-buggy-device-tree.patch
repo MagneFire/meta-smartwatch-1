@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Mon, 4 Sep 2023 18:18:53 +0000
 Subject: [PATCH] pinconf-generic: work around buggy device tree
 
+Upstream-Status: Inappropriate
 ---
  drivers/pinctrl/pinconf-generic.c | 2 ++
  1 file changed, 2 insertions(+)

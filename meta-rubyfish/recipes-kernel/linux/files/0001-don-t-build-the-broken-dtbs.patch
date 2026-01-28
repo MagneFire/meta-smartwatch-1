@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Mon, 4 Sep 2023 14:17:40 +0000
 Subject: [PATCH] don't build the broken dtbs
 
+Upstream-Status: Inappropriate
 ---
  arch/arm64/boot/dts/qcom/Makefile | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)

@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Sun, 3 Sep 2023 15:57:58 +0000
 Subject: [PATCH] Makefile: don't make CC be a python wrapper
 
+Upstream-Status: Inappropriate
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
