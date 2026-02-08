@@ -3,6 +3,7 @@ From: Philip Russell <argosphil@murena.io>
 Date: Wed, 13 Sep 2023 06:51:08 +0000
 Subject: [PATCH] switch default chipset to apq8053
 
+Upstream-Status: Inappropriate
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
