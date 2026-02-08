@@ -56,15 +56,8 @@ on init
 service vendor.rmt_storage /vendor/bin/rmt_storage
     class core
 
-service vendor.bluetooth-1-0 /vendor/bin/hw/android.hardware.bluetooth@1.0-service
-    class hal
-    oneshot
-
 service vendor.per_mgr /vendor/bin/pm-service
     class core
-
-on property:sys.boot_completed=1
-    exec -- /vendor/bin/init.rsb.sh
 
 service vendor.vibrator-1-0 /vendor/bin/hw/android.hardware.vibrator@1.0-service
     class hal
