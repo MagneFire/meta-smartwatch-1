@@ -1,0 +1,112 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Tue, 8 Jul 2026 00:30:00 +0200
+Subject: [PATCH] omapfb: minnow-panel: Keep smart-ambient self-refresh on fb
+ blank
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The Moto 360 panel has a hardware smart-ambient self-refresh state. It
+keeps the last frame visible at low power across SoC suspend. Stock
+WearOS builds its always-on display on it.
+
+mce blanks the framebuffer with FB_BLANK_VSYNC_SUSPEND while ambient
+mode is active. omapfb_blank() disabled the panel for every value other
+than UNBLANK, so the always-on face went dark instead.
+
+Add an optional omap_dss_driver->set_ambient() hook, implement it in
+the minnow panel, and route VSYNC_SUSPEND and HSYNC_SUSPEND to it.
+POWERDOWN still powers the panel off. Panels without the hook are
+unchanged.
+
+Upstream-Status: Inappropriate [minnow always-on display]
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+---
+ drivers/video/omap2/displays/panel-minnow.c | 16 ++++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-main.c    | 14 +++++++++++++-
+ include/video/omapdss.h                     |  3 +++
+ 3 files changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/omap2/displays/panel-minnow.c b/drivers/video/omap2/displays/panel-minnow.c
+index 295ce8793a0c..e8e937e1882d 100644
+--- a/drivers/video/omap2/displays/panel-minnow.c
++++ b/drivers/video/omap2/displays/panel-minnow.c
+@@ -3505,6 +3505,22 @@ static void minnow_panel_disable(struct omap_dss_device *dssdev)
+ 	mutex_unlock(&mpd->lock);
+ }
+ 
++#ifdef	CONFIG_HAS_AMBIENTMODE
++/* Enter or leave the smart-ambient self-refresh state without a full
++ * power-down, so a framebuffer blank keeps the last frame visible. */
++static int minnow_panel_set_ambient(struct omap_dss_device *dssdev, bool enable)
++{
++	struct minnow_panel_data *mpd = dev_get_drvdata(&dssdev->dev);
++	int r;
++
++	mutex_lock(&mpd->lock);
++	r = minnow_panel_change_state_mlocked(mpd,
++			enable ? DISPLAY_AMBIENT_ON : DISPLAY_ENABLE);
++	mutex_unlock(&mpd->lock);
++	return r;
++}
++#endif
++
+ static int minnow_panel_update(struct omap_dss_device *dssdev,
+ 			       u16 x, u16 y, u16 w, u16 h)
+ {
+@@ -3837,6 +3853,7 @@ static struct omap_dss_driver minnow_panel_driver = {
+ #ifdef	CONFIG_HAS_AMBIENTMODE
+ 	.suspend	= minnow_panel_suspend,
+ 	.resume		= minnow_panel_resume,
++	.set_ambient	= minnow_panel_set_ambient,
+ #endif
+ 
+ 	.update		= minnow_panel_update,
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 7464de4c93fa..5bdfa6143289 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1265,11 +1265,23 @@ static int omapfb_blank(int blank, struct fb_info *fbi)
+ 
+ 		break;
+ 
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++#if defined(CONFIG_HAS_AMBIENTMODE)
++		/* A vsync/hsync suspend keeps the last frame visible in the
++		 * panel's self-refresh state (always-on display); only a
++		 * POWERDOWN, or a panel without the hook, disables it. */
++		if (display->driver->set_ambient) {
++			if (d->auto_update_work_enabled)
++				omapfb_stop_auto_update(fbdev, display);
++			r = display->driver->set_ambient(display, true);
++			break;
++		}
++#endif
++		/* fall through */
+ 	case FB_BLANK_NORMAL:
+ 		/* FB_BLANK_NORMAL could be implemented.
+ 		 * Needs DSS additions. */
+-	case FB_BLANK_VSYNC_SUSPEND:
+-	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_POWERDOWN:
+ #if !defined(CONFIG_WAKEUP_SOURCE_NOTIFY) && !defined(CONFIG_HAS_AMBIENTMODE)
+ 		if (display->state != OMAP_DSS_DISPLAY_ACTIVE)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 1a08be0990bd..ce49ad495584 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -693,6 +693,9 @@ struct omap_dss_driver {
+ #if defined(CONFIG_HAS_AMBIENTMODE)
+ 	int (*suspend)(struct omap_dss_device *display);
+ 	int (*resume)(struct omap_dss_device *display);
++	/* Enter (true) or leave (false) the panel's smart-ambient self-refresh
++	 * state instead of a full power-down. Optional. */
++	int (*set_ambient)(struct omap_dss_device *display, bool enable);
+ #endif
+ 	int (*run_test)(struct omap_dss_device *display, int test);
+ 
+-- 
+2.50.1 (Apple Git-155)
+
