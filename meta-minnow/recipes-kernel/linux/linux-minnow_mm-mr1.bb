@@ -31,6 +31,7 @@ SRC_URI = " git://android.googlesource.com/kernel/omap;branch=android-omap-minno
     file://0015-ARM-omap2-minnow-register-btwilink-platform-device.patch \
     file://0016-misc-st_core-Fix-skb-double-free-corruption.patch \
     file://0017-misc-bq5105x_detect-don-t-force-backlight-on.patch \
+    file://0018-omapfb-minnow-panel-Keep-smart-ambient-self-refresh-.patch \
     file://defconfig \
     file://img_info \
 "
