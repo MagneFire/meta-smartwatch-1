@@ -1,0 +1,116 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darrel Griet <dgriet@gmail.com>
+Date: Tue, 8 Jul 2026 00:30:00 +0200
+Subject: [PATCH] omapfb: minnow-panel: keep smart-ambient self-refresh on fb
+ blank
+
+The Moto 360 (minnow) DSI command-mode panel implements a hardware
+smart-ambient self-refresh state (DISPLAY_AMBIENT_ON) that keeps the last
+frame visible at low power and retains it across SoC suspend. This is the
+mechanism stock WearOS uses for its always-on display.
+
+Under AsteroidOS, when the display is blanked, mce puts the framebuffer into
+FB_BLANK_VSYNC_SUSPEND (rather than FB_BLANK_POWERDOWN) whenever low-power /
+ambient mode is active. However omapfb_blank() mapped every non-UNBLANK value
+- including VSYNC_SUSPEND - to a full display->driver->disable(), tearing the
+panel out of self-refresh and turning the screen off, so the always-on watch
+face could never stay visible.
+
+Add an optional omap_dss_driver->set_ambient() hook and implement it in the
+minnow panel so that FB_BLANK_VSYNC_SUSPEND / FB_BLANK_HSYNC_SUSPEND enter the
+panel's ambient self-refresh state instead of disabling it. Panels without the
+hook fall through to the previous disable() behaviour, and a genuine
+FB_BLANK_POWERDOWN still powers the panel down. This lets the SoC deep-sleep
+while an always-on watch face stays on screen.
+
+Upstream-Status: Inappropriate [minnow/always-on-display specific]
+
+Signed-off-by: Darrel Griet <dgriet@gmail.com>
+---
+diff --git a/drivers/video/omap2/displays/panel-minnow.c b/drivers/video/omap2/displays/panel-minnow.c
+index 295ce8793a0c..e8e937e1882d 100644
+--- a/drivers/video/omap2/displays/panel-minnow.c
++++ b/drivers/video/omap2/displays/panel-minnow.c
+@@ -3505,6 +3505,25 @@ static void minnow_panel_disable(struct omap_dss_device *dssdev)
+ 	mutex_unlock(&mpd->lock);
+ }
+ 
++#ifdef	CONFIG_HAS_AMBIENTMODE
++/* Enter (enable) or leave (disable) hardware smart-ambient self-refresh
++ * without a full power-down. Called for FB_BLANK_VSYNC_SUSPEND so that a
++ * framebuffer blank keeps the last frame visible at low power (always-on
++ * display) rather than disabling the panel. Leaving ambient restores the
++ * fully interactive state unless the interactivemode node asked otherwise. */
++static int minnow_panel_set_ambient(struct omap_dss_device *dssdev, bool enable)
++{
++	struct minnow_panel_data *mpd = dev_get_drvdata(&dssdev->dev);
++	int r;
++
++	mutex_lock(&mpd->lock);
++	r = minnow_panel_change_state_mlocked(mpd,
++			enable ? DISPLAY_AMBIENT_ON : DISPLAY_ENABLE);
++	mutex_unlock(&mpd->lock);
++	return r;
++}
++#endif
++
+ static int minnow_panel_update(struct omap_dss_device *dssdev,
+ 			       u16 x, u16 y, u16 w, u16 h)
+ {
+@@ -3837,6 +3856,7 @@ static struct omap_dss_driver minnow_panel_driver = {
+ #ifdef	CONFIG_HAS_AMBIENTMODE
+ 	.suspend	= minnow_panel_suspend,
+ 	.resume		= minnow_panel_resume,
++	.set_ambient	= minnow_panel_set_ambient,
+ #endif
+ 
+ 	.update		= minnow_panel_update,
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 7464de4c93fa..5bdfa6143289 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1265,11 +1265,26 @@ static int omapfb_blank(int blank, struct fb_info *fbi)
+ 
+ 		break;
+ 
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++#if defined(CONFIG_HAS_AMBIENTMODE)
++		/* On panels with a hardware smart-ambient self-refresh state a
++		 * vsync/hsync suspend means "keep the last frame visible at low
++		 * power" (always-on display), not a full power-down. Route it to
++		 * the panel's ambient entry so the SoC can suspend while the
++		 * image stays on screen; only fall through to disable() on panels
++		 * that don't implement it (e.g. userspace requested POWERDOWN). */
++		if (display->driver->set_ambient) {
++			if (d->auto_update_work_enabled)
++				omapfb_stop_auto_update(fbdev, display);
++			r = display->driver->set_ambient(display, true);
++			break;
++		}
++#endif
++		/* fall through */
+ 	case FB_BLANK_NORMAL:
+ 		/* FB_BLANK_NORMAL could be implemented.
+ 		 * Needs DSS additions. */
+-	case FB_BLANK_VSYNC_SUSPEND:
+-	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_POWERDOWN:
+ #if !defined(CONFIG_WAKEUP_SOURCE_NOTIFY) && !defined(CONFIG_HAS_AMBIENTMODE)
+ 		if (display->state != OMAP_DSS_DISPLAY_ACTIVE)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 1a08be0990bd..ce49ad495584 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -693,6 +693,11 @@ struct omap_dss_driver {
+ #if defined(CONFIG_HAS_AMBIENTMODE)
+ 	int (*suspend)(struct omap_dss_device *display);
+ 	int (*resume)(struct omap_dss_device *display);
++	/* Enter (enable=true) or leave (enable=false) the panel's hardware
++	 * smart-ambient self-refresh state instead of a full power-down, so
++	 * the last frame stays visible at low power (always-on display).
++	 * Optional; only implemented by panels with such a mode. */
++	int (*set_ambient)(struct omap_dss_device *display, bool enable);
+ #endif
+ 	int (*run_test)(struct omap_dss_device *display, int test);
+ 
