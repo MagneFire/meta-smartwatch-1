@@ -15,6 +15,7 @@ SRC_URI = "git://android.googlesource.com/kernel/msm;branch=android-msm-swift-3.
     file://0002-Backport-mainline-4.1-Bluetooth-subsystem.patch \
     file://0003-ARM-uaccess-remove-put_user-code-duplication.patch \
     file://0004-ARM-8933-1-replace-Sun-Solaris-style-flag-on-section.patch \
+    file://0005-bluetooth-Add-Qualcomm-hci_smd-driver-for-WCNSS-Blue.patch \
     "
 SRCREV = "2f958570bcf7457da4827dc8da5ff3195d447cb3"
 LINUX_VERSION ?= "3.18"
