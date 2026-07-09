@@ -12,6 +12,7 @@ SRC_URI = "git://android.googlesource.com/kernel/msm;branch=android-msm-swift-3.
     file://defconfig \
     file://img_info \
     file://0001-scripts-dtc-Remove-redundant-YYLOC-global-declaratio.patch \
+    file://0002-Backport-mainline-4.1-Bluetooth-subsystem.patch \
     file://0003-ARM-uaccess-remove-put_user-code-duplication.patch \
     file://0004-ARM-8933-1-replace-Sun-Solaris-style-flag-on-section.patch \
     "
