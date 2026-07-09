@@ -9,6 +9,8 @@ on init
     load_system_props
     restorecon_recursive /persist
 
+    setprop ro.qualcomm.bt.hci_transport smd
+
     class_start core
 
 service logd /system/bin/logd
@@ -25,3 +27,12 @@ service rmt_storage /system/bin/rmt_storage
 
 service sensors /system/bin/sensors.qcom
     class core
+
+service wcnss_service /system/bin/wcnss_service
+    class core
+    user root
+    oneshot
+
+service bt_init /system/bin/sh /usr/bin/bt-init.sh
+    class core
+    oneshot
