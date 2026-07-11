@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darrel Griet <dgriet@gmail.com>
+Date: Sat, 11 Jul 2026 20:16:17 +0200
+Subject: [PATCH] bluetooth: Clamp accepted LE connection interval floor
+
+Upstream-Status: Inappropriate [swift/WCNSS hardware workaround]
+
+The WCNSS Bluetooth controller corrupts its AES-CCM state on an
+encrypted LE link when driven at very short connection intervals,
+which the peer reports as a MIC failure (HCI 0x3d) and the link is
+dropped. This is hit in practice when Android negotiates a 7.5 ms
+interval for high-priority GATT (e.g. music remote control).
+
+As the peripheral we answer the LE Remote Connection Parameter
+Request with our own le_conn_min_interval as the lower bound instead
+of echoing the central's request, so the connection settles on a safe
+interval and the encryption engine stays in sync.
+---
+ net/bluetooth/hci_event.c | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/net/bluetooth/hci_event.c b/net/bluetooth/hci_event.c
+index f2c7737e0fac..ddbd9275bc28 100755
+--- a/net/bluetooth/hci_event.c
++++ b/net/bluetooth/hci_event.c
+@@ -5035,6 +5035,34 @@ static void hci_le_remote_conn_param_req_evt(struct hci_dev *hdev,
+ 		return send_conn_param_neg_reply(hdev, handle,
+ 						 HCI_ERROR_INVALID_LL_PARAMS);
+ 
++	/*
++	 * The WCNSS Bluetooth controller corrupts its AES-CCM encryption
++	 * state -- reported by the peer as a MIC failure (HCI error 0x3d)
++	 * that tears down the link -- when an encrypted LE connection is
++	 * driven at very short connection intervals, e.g. the 7.5 ms that
++	 * Android negotiates for high-priority GATT (music control). As the
++	 * peripheral we cannot forbid an interval outright, but we answer
++	 * the connection parameter request with our own lower bound so the
++	 * central settles on a safe interval instead.
++	 */
++	if (min < hdev->le_conn_min_interval) {
++		/*
++		 * If the whole requested range is below our floor, reject the
++		 * request so the current (safe) connection parameters stay in
++		 * effect. Counter-proposing a longer interval instead makes
++		 * the central re-request every time and the resulting stream
++		 * of interval changes desyncs the link (supervision timeout,
++		 * HCI 0x08). Only raise the lower bound when the requested
++		 * range still leaves room above the floor.
++		 */
++		if (max < hdev->le_conn_min_interval)
++			return send_conn_param_neg_reply(hdev, handle,
++						 HCI_ERROR_INVALID_LL_PARAMS);
++		min = hdev->le_conn_min_interval;
++		if (hci_check_conn_params(min, max, latency, timeout))
++			latency = 0;
++	}
++
+ 	if (hcon->role == HCI_ROLE_MASTER) {
+ 		struct hci_conn_params *params;
+ 		u8 store_hint;
+@@ -5060,10 +5088,10 @@ static void hci_le_remote_conn_param_req_evt(struct hci_dev *hdev,
+ 	}
+ 
+ 	cp.handle = ev->handle;
+-	cp.interval_min = ev->interval_min;
+-	cp.interval_max = ev->interval_max;
+-	cp.latency = ev->latency;
+-	cp.timeout = ev->timeout;
++	cp.interval_min = cpu_to_le16(min);
++	cp.interval_max = cpu_to_le16(max);
++	cp.latency = cpu_to_le16(latency);
++	cp.timeout = cpu_to_le16(timeout);
+ 	cp.min_ce_len = 0;
+ 	cp.max_ce_len = 0;
+ 
+-- 
+2.53.0
+
