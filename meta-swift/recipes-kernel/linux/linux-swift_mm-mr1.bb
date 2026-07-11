@@ -17,6 +17,7 @@ SRC_URI = "git://android.googlesource.com/kernel/msm;branch=android-msm-swift-3.
     file://0004-ARM-8933-1-replace-Sun-Solaris-style-flag-on-section.patch \
     file://0005-bluetooth-Add-Qualcomm-hci_smd-driver-for-WCNSS-Blue.patch \
     file://0006-bluetooth-Clamp-accepted-LE-connection-interval-floo.patch \
+    file://0007-bluetooth-Request-a-longer-LE-supervision-timeout-on.patch \
     "
 SRCREV = "2f958570bcf7457da4827dc8da5ff3195d447cb3"
 LINUX_VERSION ?= "3.18"

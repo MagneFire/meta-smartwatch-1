@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darrel Griet <dgriet@gmail.com>
+Date: Sat, 11 Jul 2026 21:16:05 +0200
+Subject: [PATCH] bluetooth: Request a longer LE supervision timeout on swift
+
+Upstream-Status: Inappropriate [swift/WCNSS hardware workaround]
+
+The WCNSS controller intermittently stops servicing an encrypted LE
+link for up to ~17s at a time and then recovers on its own -- this
+happens in every configuration (central or peripheral, bluedroid or
+BlueZ), so it is a controller firmware limitation. Stock WearOS with
+Gadgetbridge rides through the identical stalls because bluedroid
+negotiates a 20s link supervision timeout; at the BlueZ default of
+5s (or an earlier 15s attempt, which the ~17s stalls still exceeded)
+the link is torn down with HCI 0x08. Request a 30s supervision
+timeout -- both in the peripheral-initiated connection parameter
+update and when answering the central's remote connection parameter
+request -- so the connection survives the stall as it does on stock.
+---
+ net/bluetooth/hci_event.c  |  6 ++++++
+ net/bluetooth/l2cap_core.c | 14 +++++++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/net/bluetooth/hci_event.c b/net/bluetooth/hci_event.c
+index ddbd9275bc28..bf379531b317 100755
+--- a/net/bluetooth/hci_event.c
++++ b/net/bluetooth/hci_event.c
+@@ -5063,6 +5063,12 @@ static void hci_le_remote_conn_param_req_evt(struct hci_dev *hdev,
+ 			latency = 0;
+ 	}
+ 
++	/* Also lengthen the supervision timeout (see l2cap_le_conn_ready):
++	 * ride through the WCNSS RF-servicing stall instead of dropping. */
++	if (timeout < 0x09c4 &&
++	    !hci_check_conn_params(min, max, latency, 0x0bb8))
++		timeout = 0x0bb8;
++
+ 	if (hcon->role == HCI_ROLE_MASTER) {
+ 		struct hci_conn_params *params;
+ 		u8 store_hint;
+diff --git a/net/bluetooth/l2cap_core.c b/net/bluetooth/l2cap_core.c
+index eda4304b5dde..9cff561f19dd 100644
+--- a/net/bluetooth/l2cap_core.c
++++ b/net/bluetooth/l2cap_core.c
+@@ -1488,11 +1488,23 @@ static void l2cap_le_conn_ready(struct l2cap_conn *conn)
+ 	    (hcon->le_conn_interval < hcon->le_conn_min_interval ||
+ 	     hcon->le_conn_interval > hcon->le_conn_max_interval)) {
+ 		struct l2cap_conn_param_update_req req;
++		u16 to_multiplier = hcon->le_supv_timeout;
++
++		/*
++		 * WCNSS BLE workaround: the controller briefly (~7s) stops
++		 * servicing an encrypted LE link under load and then recovers;
++		 * at the default 5s supervision timeout the central drops the
++		 * link (HCI 0x08) before it heals. Ask the central for a
++		 * longer supervision timeout so the connection rides through
++		 * the stall instead of disconnecting.
++		 */
++		if (to_multiplier < 0x09c4)	/* 6.0 s */
++			to_multiplier = 0x0bb8;	/* 15.0 s */
+ 
+ 		req.min = cpu_to_le16(hcon->le_conn_min_interval);
+ 		req.max = cpu_to_le16(hcon->le_conn_max_interval);
+ 		req.latency = cpu_to_le16(hcon->le_conn_latency);
+-		req.to_multiplier = cpu_to_le16(hcon->le_supv_timeout);
++		req.to_multiplier = cpu_to_le16(to_multiplier);
+ 
+ 		l2cap_send_cmd(conn, l2cap_get_ident(conn),
+ 			       L2CAP_CONN_PARAM_UPDATE_REQ, sizeof(req), &req);
+-- 
+2.53.0
+
