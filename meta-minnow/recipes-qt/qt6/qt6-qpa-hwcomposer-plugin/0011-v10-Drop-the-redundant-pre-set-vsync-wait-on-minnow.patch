@@ -1,0 +1,46 @@
+From: Darrel Griet <dgriet@gmail.com>
+Date: Mon, 13 Jul 2026 23:10:00 +0200
+Subject: [PATCH] v10: Drop the redundant pre-set vsync wait on minnow
+
+Upstream-Status: Inappropriate [minnow command-mode panel specific]
+
+swap() waited on the vsync callback before calling hwc_device->set().
+On minnow's DSI command-mode panel that wait is redundant: the panel
+latches from its own GRAM on its internal TE boundary and set() already
+blocks until the commit completes (the retire fence is signalled by the
+time set() returns, measured fence wait ~0 ms). The extra wait added
+~7 ms of pure latency to the render thread's critical path each frame,
+pushing wait+set (7+17 ms) past one vsync period so frames alternated
+between 22 and 44 ms (~34 fps effective). Removing it lets set()'s own
+TE sync pace the loop, giving a steady ~22 ms/frame (~44 fps, the
+panel's refresh ceiling).
+
+Instrumented swap() phase averages during a continuous animation:
+  before: wall=29.1 wait=7.4 set=16.7 fence=0.0
+  after:  wall=22.6 wait=0.0 set=17.4 fence=0.0
+
+---
+--- a/hwcomposer/hwcomposer_backend_v10.cpp
++++ b/hwcomposer/hwcomposer_backend_v10.cpp
+@@ -239,11 +239,16 @@
+ {
+     HWC_PLUGIN_ASSERT_ZERO(!(hwc_list->retireFenceFd == -1));
+ 
+-    // Wait for vsync before posting new frame
+-    // or force swap if exceeding the vsync timeframe
+-    vsync_mutex.lock();
+-    vsync_cond.wait(&vsync_mutex, 1000/vsyncFPS);
+-    vsync_mutex.unlock();
++    // The Moto 360 panel is a DSI command-mode panel: it latches a new frame
++    // from its own GRAM only on its internal TE (tearing-effect) boundary, and
++    // hwc_device->set() below blocks until that commit completes (the retire
++    // fence is already signalled by the time set() returns). Waiting for the
++    // vsync callback here as well just added a whole extra ~7 ms of latency on
++    // the render thread's critical path per frame - pushing wait + set past one
++    // vsync period so frames alternated 22/44 ms (~34 fps). set()'s own TE sync
++    // paces us, so let it: dropping this wait yields a steady ~22 ms/frame
++    // (~44 fps, the panel's ceiling). This is safe only because the panel
++    // self-paces, hence a minnow-specific change.
+ 
+     hwc_list->dpy = EGL_NO_DISPLAY;
+     hwc_list->sur = EGL_NO_SURFACE;
