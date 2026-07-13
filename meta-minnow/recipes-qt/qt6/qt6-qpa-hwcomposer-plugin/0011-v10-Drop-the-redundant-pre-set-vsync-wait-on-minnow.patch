@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Mon, 13 Jul 2026 23:10:00 +0200
+Subject: [PATCH] v10: Drop the redundant pre-set vsync wait on minnow
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+swap() waits for the vsync callback before calling hwc_device->set().
+
+On minnow's DSI command-mode panel that wait is redundant. The panel
+latches from its own GRAM on its TE boundary, and set() already blocks
+until the commit completes. The extra wait added ~7 ms per frame to the
+render thread, pushing wait+set past one vsync period. Frames then
+alternated between 22 and 44 ms (~34 fps).
+
+Let set()'s own TE sync pace the loop. Instrumented swap() phase
+averages during a continuous animation:
+ before: wall=29.1 wait=7.4 set=16.7 fence=0.0
+ after:  wall=22.6 wait=0.0 set=17.4 fence=0.0
+
+Upstream-Status: Inappropriate [minnow command-mode panel specific]
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+---
+ hwcomposer/hwcomposer_backend_v10.cpp | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+--- a/hwcomposer/hwcomposer_backend_v10.cpp
++++ b/hwcomposer/hwcomposer_backend_v10.cpp
+@@ -239,11 +239,9 @@
+ {
+     HWC_PLUGIN_ASSERT_ZERO(!(hwc_list->retireFenceFd == -1));
+ 
+-    // Wait for vsync before posting new frame
+-    // or force swap if exceeding the vsync timeframe
+-    vsync_mutex.lock();
+-    vsync_cond.wait(&vsync_mutex, 1000/vsyncFPS);
+-    vsync_mutex.unlock();
++    // No vsync wait here: the command-mode panel latches on its own TE
++    // boundary and hwc_device->set() below blocks until the commit lands,
++    // so waiting as well only added ~7 ms of latency per frame.
+ 
+     hwc_list->dpy = EGL_NO_DISPLAY;
+     hwc_list->sur = EGL_NO_SURFACE;
