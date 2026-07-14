@@ -1,0 +1,33 @@
+From: Darrel Griet <dgriet@gmail.com>
+Date: Mon, 14 Jul 2026 13:30:00 +0200
+Subject: [PATCH] omapfb: minnow-panel: Use 60Hz as the normal-mode refresh rate
+
+0017 restores 60Hz in the static SSD2848 init sequence, but the runtime
+refresh-rate manager overrides it: on every wake from ambient mode back
+to normal (DISPLAY_AMBIENT_ON -> DISPLAY_ENABLE) the driver calls
+minnow_panel_set_default_fps(), which re-writes the SSD2848 VTCM pixel-
+clock-ratio register [0x0010] to the REFRESH_RATE_45HZ table entry. Since
+the watch cycles through ambient mode while idle, the panel settles back
+at 45Hz after the first ambient wake.
+
+Point the "default" (normal-mode) rate at the existing REFRESH_RATE_60HZ
+table entry so normal operation stays at 60Hz. Ambient (30Hz) and dock
+(60Hz) rates are unchanged. Depends on 0017 (OMAP DISPC pixel clock and
+the init-sequence VTCM ratio must also be 60Hz).
+
+Trade-off: higher display power draw. Revert (with 0017) for 45Hz.
+
+Upstream-Status: Inappropriate [minnow board/panel specific]
+
+---
+--- a/drivers/video/omap2/displays/panel-minnow.c
++++ b/drivers/video/omap2/displays/panel-minnow.c
+@@ -629,7 +629,7 @@
+ #define minnow_panel_set_lowest_fps(mpd)	\
+ 		minnow_panel_set_refresh_rate_mlocked(mpd, REFRESH_RATE_30HZ)
+ #define minnow_panel_set_default_fps(mpd)	\
+-		minnow_panel_set_refresh_rate_mlocked(mpd, REFRESH_RATE_45HZ)
++		minnow_panel_set_refresh_rate_mlocked(mpd, REFRESH_RATE_60HZ)
+ #define minnow_panel_set_dock_fps(mpd)	\
+ 		minnow_panel_set_refresh_rate_mlocked(mpd, REFRESH_RATE_60HZ)
+ static int minnow_panel_set_refresh_rate_mlocked(struct minnow_panel_data *mpd,
