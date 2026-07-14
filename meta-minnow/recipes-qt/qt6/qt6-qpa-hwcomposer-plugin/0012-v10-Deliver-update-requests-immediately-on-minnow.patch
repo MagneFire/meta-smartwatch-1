@@ -1,0 +1,56 @@
+From: Darrel Griet <dgriet@gmail.com>
+Date: Mon, 14 Jul 2026 10:00:00 +0200
+Subject: [PATCH] v10: Deliver update requests immediately on minnow
+
+Upstream-Status: Inappropriate [minnow command-mode panel specific]
+
+The shared v10 backend (0009) delivers scene-graph update requests from
+the hwcomposer vsync callback, phase-locking render to the display. On
+minnow that adds up to a full vsync period of latency between an input
+event dirtying the scene and the render being delivered: measured
+average requestUpdate->deliver latency was ~15 ms (max ~one period).
+
+Now that swap() no longer waits for vsync before set() (the panel
+self-paces through its TE signal), that phase-locking buys nothing on
+throughput - frame cadence stays panel-limited at ~45 fps - while the
+delivery delay is pure input latency. Delivering on a zero-interval
+timer (next event-loop pass) instead drops the measured delivery
+latency to ~0.7 ms with no cadence regression (two-vsync-period frames
+during animation stayed at 0%). This is the difference that makes
+touch dragging feel responsive.
+
+Only correct in combination with the minnow swap() TE self-pacing, so
+it is a minnow-only change layered on the shared backend.
+
+---
+--- a/hwcomposer/hwcomposer_backend_v10.cpp
++++ b/hwcomposer/hwcomposer_backend_v10.cpp
+@@ -376,16 +376,19 @@
+     if (m_displayOff && !m_ambientMode)
+         return true;
+ 
+-    // Deliver update requests from the vsync callback (see notifyVsync), so
+-    // rendering is phase-locked to the display instead of paced by a timer
+-    // that drifts against it. The scene graph only asks for another update if
+-    // something actually changed, so a static scene still stops rendering.
+-    m_updatePending.storeRelease(1);
+-
+-    // Fallback in case vsync events do not arrive (e.g. around display
+-    // off/on transitions); mirrors the v11/v20 vsync timeout strategy.
++    // Deliver the update on the next event-loop pass rather than holding it
++    // back to the vsync callback (which notifyVsync would do on the general
++    // v10 path). hwc_device->set() already self-paces against the panel's TE
++    // signal now that swap() no longer waits for vsync, so throughput stays
++    // panel-limited (~45 fps) either way - but delivering immediately removes
++    // up to one vsync period of input-to-render latency (measured ~15 ms avg
++    // -> ~0.7 ms), which is what makes dragging feel responsive. The scene
++    // graph only requests another update when something actually changed, so a
++    // static scene still stops rendering and the SoC can idle. The
++    // m_updatePending / notifyVsync vsync-delivery path is thus unused on
++    // minnow; it is left in place for the shared v10 backend.
+     if (!m_deliverUpdateTimeout.isActive())
+-        m_deliverUpdateTimeout.start(50, this);
++        m_deliverUpdateTimeout.start(0, this);
+ 
+     return true;
+ }
