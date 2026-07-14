@@ -1,0 +1,70 @@
+From 92aecc4bbf85cf684c910e671f5de8a3ca95debe Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Tue, 14 Jul 2026 23:19:47 +0200
+Subject: [PATCH] misc: bq5105x_detect: don't force ambient backlight on
+ wireless dock
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Placing the watch on the wireless charging dock left the backlight dimly
+lit even when the screen was supposed to be off. This did not happen on
+battery or over the USB debug lines.
+
+When the dock is detected, bq5105x_detect broadcasts a
+DISPLAY_WAKE_EVENT_DOCKON notification on the wakeup_source_notify chain.
+On the stock (WearOS) firmware this drives an "ambient display while
+docked" feature via three consumers: panel-minnow forces
+DISPLAY_AMBIENT_ON, m4sensorhub_als keeps the light sensor feeding the
+backlight while charging, and leds-lm3535 re-enables the LED for
+ALS-while-charging and applies a MIN_DOCK_BVALUE brightness floor. USB
+and battery never generate a dock event, which is why the symptom was
+dock-only.
+
+On AsteroidOS display and backlight policy is owned by userspace (mce),
+so drop the display-wake dock broadcast. All three mechanisms are gated
+on that single event, so this disables the forced ambient backlight
+entirely. Charging/dock status that userspace needs is still reported in
+the same function via power_supply_changed() and switch_set_state(),
+which are independent of the display-wake broadcast.
+
+Upstream-Status: Inappropriate [AsteroidOS-specific policy]
+
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+---
+ drivers/misc/bq5105x_detect.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/misc/bq5105x_detect.c b/drivers/misc/bq5105x_detect.c
+index 37cbdcaa11ce..b8889b551622 100644
+--- a/drivers/misc/bq5105x_detect.c
++++ b/drivers/misc/bq5105x_detect.c
+@@ -215,11 +215,20 @@ static void bq5105x_detect_report(struct bq5105x_detect *chip, bool docked)
+ {
+ 	if (chip->reported_docked != docked) {
+ 		dev_dbg(&chip->pdev->dev, "report docked=%d\n", docked);
+-#ifdef CONFIG_WAKEUP_SOURCE_NOTIFY
+-		wakeup_source_notify_subscriber(docked
+-						? DISPLAY_WAKE_EVENT_DOCKON
+-						: DISPLAY_WAKE_EVENT_DOCKOFF);
+-#endif
++		/*
++		 * Do NOT broadcast the display-wake dock event. On the stock
++		 * (WearOS) firmware this drives an "ambient display while
++		 * docked" feature: the panel (panel-minnow), the light sensor
++		 * (m4sensorhub_als, ALS-while-charging) and the backlight
++		 * (leds-lm3535, dock brightness floor) all keep a dim always-on
++		 * display lit whenever the wireless charger is present. On
++		 * AsteroidOS display/backlight policy is owned entirely by
++		 * userspace (mce), so this only manifests as the backlight
++		 * refusing to switch off while the watch sits on the dock.
++		 * Charging/dock status is still reported to userspace below via
++		 * power_supply_changed() and switch_set_state(), which are
++		 * independent of the display-wake broadcast.
++		 */
+ 		chip->reported_docked = docked;
+ 		power_supply_changed(&chip->charger);
+ 		switch_set_state(chip->sdev, docked);
+-- 
+2.50.1 (Apple Git-155)
+
