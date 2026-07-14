@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Tue, 14 Jul 2026 10:00:00 +0200
+Subject: [PATCH] v10: Deliver update requests immediately on minnow
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The shared v10 backend delivers scene-graph update requests from the
+hwcomposer vsync callback. With swap() no longer waiting for vsync on
+minnow, that phase-locking only adds latency. Measured
+requestUpdate->deliver averaged ~15 ms, up to one vsync period, of
+input-to-render lag.
+
+Deliver on a zero-interval timer instead. Delivery latency drops to
+~0.7 ms with no cadence regression: two-vsync-period frames during
+animation stayed at 0-1%. Touch dragging feels responsive as a result.
+Updates still queue while the display is blanked, and a static scene
+still stops rendering.
+
+Upstream-Status: Inappropriate [minnow command-mode panel specific]
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+---
+ hwcomposer/hwcomposer_backend_v10.cpp | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+--- a/hwcomposer/hwcomposer_backend_v10.cpp
++++ b/hwcomposer/hwcomposer_backend_v10.cpp
+@@ -338,16 +338,12 @@
+     if (m_displayOff && !m_ambientMode)
+         return true;
+ 
+-    // Deliver update requests from the vsync callback (see notifyVsync), so
+-    // rendering is phase-locked to the display instead of paced by a timer
+-    // that drifts against it. The scene graph only asks for another update if
+-    // something actually changed, so a static scene still stops rendering.
+-    m_updatePending.storeRelease(1);
+-
+-    // Fallback in case vsync events do not arrive (e.g. around display
+-    // off/on transitions); mirrors the v11/v20 vsync timeout strategy.
++    // Deliver on the next event-loop pass instead of from the vsync callback.
++    // set() already self-paces against the panel's TE (swap() no longer waits
++    // for vsync), so holding delivery to vsync only added up to one period of
++    // input latency. A static scene still stops requesting updates.
+     if (!m_deliverUpdateTimeout.isActive())
+-        m_deliverUpdateTimeout.start(50, this);
++        m_deliverUpdateTimeout.start(0, this);
+ 
+     return true;
+ }
