@@ -5,3 +5,11 @@
 # interaction, making the UI feel sluggish. interactive ramps to 1 GHz
 # within a frame or two and still idles at 300 MHz.
 echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+# Target 50% load (like stock WearOS) instead of the interactive default of
+# 90. target_loads is the load the governor aims to hold at a given frequency;
+# 90 lets the single A8 run nearly saturated before stepping up, so the first
+# part of a gesture is served at too low a clock. 50 keeps ~2x frequency
+# headroom and ramps sooner, matching WearOS's snappier feel. Idle still drops
+# to 300 MHz. Other interactive tunables already match WearOS.
+echo 50 > /sys/devices/system/cpu/cpufreq/interactive/target_loads
