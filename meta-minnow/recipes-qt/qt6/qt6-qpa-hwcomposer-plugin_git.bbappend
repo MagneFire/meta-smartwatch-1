@@ -5,4 +5,5 @@ SRC_URI:append:minnow = " \
     file://0010-v10-Support-ambient-mode-via-panel-self-refresh.patch;striplevel=2 \
     file://0011-v10-Drop-the-redundant-pre-set-vsync-wait-on-minnow.patch;striplevel=2 \
     file://0012-v10-Deliver-update-requests-immediately-on-minnow.patch;striplevel=2 \
+    file://0013-v10-Report-minnow-s-real-45Hz-vsync-period.patch;striplevel=2 \
 "
