@@ -1,0 +1,30 @@
+From: Darrel Griët <dgriet@gmail.com>
+Subject: [PATCH] v10: Report minnow's real 45Hz vsync period
+
+minnow's HWC_VSYNC_PERIOD query always fails, so refreshRate() fell
+back to assuming 60 Hz. The panel really runs at 45 Hz (pixel clock
+4176 kHz / 320x290), so Qt's fixed-step animation driver advanced
+animations by 16.7 ms per frame while real frames arrive every
+22.2 ms. Flick/fling animations therefore played at ~75% speed and
+visibly hitched whenever the driver drift-corrected back to wall
+time. The wrong rate was also advertised to Wayland clients through
+wl_output, giving every app the same wrong animation timestep.
+
+Report the true 22.2 ms period instead. Minnow-only: the correct
+fallback is specific to this panel.
+
+Upstream-Status: Inappropriate [minnow-specific panel timing]
+---
+--- a/hwcomposer/hwcomposer_backend_v10.cpp	2026-07-18 16:00:00.000000000 +0200
++++ b/hwcomposer/hwcomposer_backend_v10.cpp	2026-07-18 16:00:00.000000000 +0200
+@@ -354,8 +354,8 @@
+
+         int res = hwc_device->query(hwc_device, HWC_VSYNC_PERIOD, &vsyncVal);
+         if (res != 0 || vsyncVal == 0) {
+-            qWarning() << "query(HWC_VSYNC_PERIOD) failed, assuming 60 Hz";
+-            vsyncVal = 16666667; // 60 Hz vsync period in ns
++            qWarning() << "query(HWC_VSYNC_PERIOD) failed, assuming 45 Hz";
++            vsyncVal = 22222222; // minnow panel: 4176 kHz / (320*290) = 45 Hz
+         }
+
+         vsyncFPS = (float)1000000000 / (float)vsyncVal;
