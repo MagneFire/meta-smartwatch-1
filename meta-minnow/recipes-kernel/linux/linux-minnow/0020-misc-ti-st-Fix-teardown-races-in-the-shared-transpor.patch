@@ -1,0 +1,242 @@
+From f9c43625e0f59dc865baefa7b867471f25ccc8be Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Darrel=20Gri=C3=ABt?= <dgriet@gmail.com>
+Date: Sun, 16 Aug 2026 21:53:23 +0200
+Subject: [PATCH] misc: ti-st: Fix teardown races in the shared transport
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Turning Bluetooth off resets the watch on minnow (Moto 360). The reset is
+rare, leaves nothing in the journal and needs BT traffic in flight to
+reproduce.
+
+st_tx_wakeup() dereferences st_data->tty without checking it:
+
+	spin_lock_irqsave(&st_data->lock, flags);
+	set_bit(TTY_DO_WRITE_WAKEUP, &st_data->tty->flags);
+
+Every other tty access in the driver is guarded (st_int_write(),
+st_get_uart_wr_room(), st_write()); this one is not.
+
+st_tty_close() sets st_gdata->tty = NULL outside the spinlock and only
+purges txq/tx_waitq several lines later, so there is a window where the
+tty is gone but skbs are still queued. It also never clears tx_skb, so a
+partially written skb survives the close. Anything that calls
+st_tx_wakeup() in that window - st_write(), st_wakeup_ack() on an HCI-LL
+PM packet, or the tty write-wakeup - dequeues an skb and faults on the
+NULL tty.
+
+st_tty_wakeup() runs from the UART interrupt handler
+(serial_omap_irq() -> transmit_chars() -> uart_write_wakeup()), so that
+fault happens in hard IRQ context, where die() escalates to
+panic("Fatal exception in interrupt") regardless of panic_on_oops.
+
+Fix all three:
+
+ - guard st_data->tty in st_tx_wakeup() and drop the skb if the ldisc
+   went away, logging it so the condition is visible rather than fatal;
+
+ - in st_tty_close(), flush while the tty is still valid, then purge the
+   queues, clear tx_skb and drop the tty reference in a single locked
+   region with the NULL store last;
+
+ - defer st_tty_wakeup() to a work item so the transmit path, which
+   writes to the tty and frees skbs, runs in process context instead of
+   hard IRQ. Based on "ti-st: use worker instead of calling st_int_write
+   in wake up" by Muhammad Hamza Farooq and Jacob Siverskog
+   (https://lkml.iu.edu/hypermail/linux/kernel/1509.1/02549.html), with
+   the cancel_work_sync() teardown that patch omits.
+
+While here, stop leaking a UART runtime-PM reference in st_ll: the
+duplicate LL_WAKE_UP_IND paths re-sent the ack through send_ll_cmd(),
+which takes wake_lock() + omap_serial_runtime_get() again even though the
+chip is already awake or waking. Only LL_SLEEP_ACK ever puts that
+reference, so each duplicate pinned the UART powered.
+
+Signed-off-by: Darrel Griët <dgriet@gmail.com>
+
+Upstream-Status: Inappropriate [driver removed from mainline]
+---
+ drivers/misc/ti-st/st_core.c | 48 +++++++++++++++++++++++++++++++++---
+ drivers/misc/ti-st/st_ll.c   | 20 +++++++++++++--
+ include/linux/ti_wilink_st.h |  2 ++
+ 3 files changed, 64 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/misc/ti-st/st_core.c b/drivers/misc/ti-st/st_core.c
+index 92449a6a1d6b..15c70a901e47 100644
+--- a/drivers/misc/ti-st/st_core.c
++++ b/drivers/misc/ti-st/st_core.c
+@@ -487,6 +487,15 @@ void st_tx_wakeup(struct st_data_s *st_data)
+ 		while ((skb = st_int_dequeue(st_data))) {
+ 			int len;
+ 			spin_lock_irqsave(&st_data->lock, flags);
++			/* the ldisc may have been un-installed under us, in
++			 * which case there is nothing left to write to
++			 */
++			if (unlikely(st_data->tty == NULL)) {
++				pr_err("%s: tty gone, dropping skb\n", __func__);
++				kfree_skb(skb);
++				spin_unlock_irqrestore(&st_data->lock, flags);
++				break;
++			}
+ 			/* enable wake-up from TTY */
+ 			set_bit(TTY_DO_WRITE_WAKEUP, &st_data->tty->flags);
+ 			len = st_int_write(st_data, skb->data, skb->len);
+@@ -508,6 +517,15 @@ void st_tx_wakeup(struct st_data_s *st_data)
+ 	clear_bit(ST_TX_SENDING, &st_data->tx_state);
+ }
+ 
++/* work handler for the deferred tty write-wakeup, see st_tty_wakeup() */
++static void work_fn_write_wakeup(struct work_struct *work)
++{
++	struct st_data_s *st_gdata = container_of(work, struct st_data_s,
++						  work_write_wakeup);
++
++	st_tx_wakeup((void *)st_gdata);
++}
++
+ /********************************************************************/
+ /* functions called from ST KIM
+ */
+@@ -755,6 +773,11 @@ static void st_tty_close(struct tty_struct *tty)
+ 
+ 	pr_info("%s\n", __func__);
+ 
++	/* Make sure no deferred write-wakeup is still in flight before we
++	 * drop the tty reference below.
++	 */
++	cancel_work_sync(&st_gdata->work_write_wakeup);
++
+ 	/* TODO:
+ 	 * if a protocol has been registered & line discipline
+ 	 * un-installed for some reason - what should be done ?
+@@ -773,20 +796,30 @@ static void st_tty_close(struct tty_struct *tty)
+ 	 * N_TI_WL ldisc is un-installed
+ 	 */
+ 	st_kim_complete(st_gdata->kim_data);
+-	st_gdata->tty = NULL;
+-	/* Flush any pending characters in the driver and discipline. */
++
++	/* Flush any pending characters in the driver and discipline.
++	 * Done while st_gdata->tty is still valid, so that a concurrent
++	 * st_tx_wakeup() either writes to a live tty or sees NULL below.
++	 */
+ 	tty_ldisc_flush(tty);
+ 	tty_driver_flush_buffer(tty);
+ 
++	/* Drop the queues and the tty reference in one go: leaving skbs
++	 * queued while st_gdata->tty is already NULL would let
++	 * st_tx_wakeup() de-queue them and de-reference a NULL tty.
++	 */
+ 	spin_lock_irqsave(&st_gdata->lock, flags);
+ 	/* empty out txq and tx_waitq */
+ 	skb_queue_purge(&st_gdata->txq);
+ 	skb_queue_purge(&st_gdata->tx_waitq);
++	kfree_skb(st_gdata->tx_skb);
++	st_gdata->tx_skb = NULL;
+ 	/* reset the TTY Rx states of ST */
+ 	st_gdata->rx_count = 0;
+ 	st_gdata->rx_state = ST_W4_PACKET_TYPE;
+ 	kfree_skb(st_gdata->rx_skb);
+ 	st_gdata->rx_skb = NULL;
++	st_gdata->tty = NULL;
+ 	spin_unlock_irqrestore(&st_gdata->lock, flags);
+ 
+ 	pr_debug("%s: done\n", __func__);
+@@ -822,8 +855,12 @@ static void st_tty_wakeup(struct tty_struct *tty)
+ 	/* don't do an wakeup for now */
+ 	clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+ 
+-	/* call our internal wakeup */
+-	st_tx_wakeup((void *)st_gdata);
++	/* We are called from the UART interrupt handler. Defer the actual
++	 * transmit to process context: st_tx_wakeup() writes to the tty and
++	 * frees skbs, and a fault in hard IRQ context is an unconditional
++	 * panic rather than a recoverable oops.
++	 */
++	schedule_work(&st_gdata->work_write_wakeup);
+ }
+ 
+ static void st_tty_flush_buffer(struct tty_struct *tty)
+@@ -883,6 +920,8 @@ int st_core_init(struct st_data_s **core_data)
+ 	/* Locking used in st_int_enqueue() to avoid multiple execution */
+ 	spin_lock_init(&st_gdata->lock);
+ 
++	INIT_WORK(&st_gdata->work_write_wakeup, work_fn_write_wakeup);
++
+ 	err = st_ll_init(st_gdata);
+ 	if (err) {
+ 		pr_err("error during st_ll initialization(%ld)\n", err);
+@@ -906,6 +945,7 @@ void st_core_exit(struct st_data_s *st_gdata)
+ 		pr_err("error during deinit of ST LL %ld\n", err);
+ 
+ 	if (st_gdata != NULL) {
++		cancel_work_sync(&st_gdata->work_write_wakeup);
+ 		wake_lock_destroy(&st_gdata->st_awake);
+ 		/* Free ST Tx Qs and skbs */
+ 		skb_queue_purge(&st_gdata->txq);
+diff --git a/drivers/misc/ti-st/st_ll.c b/drivers/misc/ti-st/st_ll.c
+index fa4b8e48ada5..a15f6e532d9c 100644
+--- a/drivers/misc/ti-st/st_ll.c
++++ b/drivers/misc/ti-st/st_ll.c
+@@ -52,6 +52,22 @@ static void send_ll_cmd(struct st_data_s *st_data,
+ 	return;
+ }
+ 
++/*
++ * Re-send a wake-up ack without taking another PM reference.
++ *
++ * Used for the duplicate LL_WAKE_UP_IND cases: the chip is already awake or
++ * already waking, so the reference taken back then is still held and only
++ * LL_SLEEP_ACK will drop it. Going through send_ll_cmd() here would take a
++ * second reference that nothing ever puts, pinning the UART powered.
++ */
++static void resend_ll_wake_ack(struct st_data_s *st_data)
++{
++	unsigned char cmd = LL_WAKE_UP_ACK;
++
++	pr_debug("%s: writing %x\n", __func__, cmd);
++	st_int_write(st_data, &cmd, 1);
++}
++
+ static void ll_device_want_to_sleep(struct st_data_s *st_data)
+ {
+ 	struct kim_data_s	*kim_data;
+@@ -87,12 +103,12 @@ static void ll_device_want_to_wakeup(struct st_data_s *st_data)
+ 	case ST_LL_ASLEEP_TO_AWAKE:
+ 		/* duplicate wake_ind */
+ 		pr_err("duplicate wake_ind while waiting for Wake ack\n");
+-		send_ll_cmd(st_data, LL_WAKE_UP_ACK);
++		resend_ll_wake_ack(st_data);
+ 		break;
+ 	case ST_LL_AWAKE:
+ 		/* duplicate wake_ind */
+ 		pr_err("duplicate wake_ind already AWAKE\n");
+-		send_ll_cmd(st_data, LL_WAKE_UP_ACK);
++		resend_ll_wake_ack(st_data);
+ 		break;
+ 	case ST_LL_AWAKE_TO_ASLEEP:
+ 		/* duplicate wake_ind */
+diff --git a/include/linux/ti_wilink_st.h b/include/linux/ti_wilink_st.h
+index 3ef81ae5f19c..2f2b312ddb84 100644
+--- a/include/linux/ti_wilink_st.h
++++ b/include/linux/ti_wilink_st.h
+@@ -27,6 +27,7 @@
+ 
+ #include <linux/skbuff.h>
+ #include <linux/wakelock.h>
++#include <linux/workqueue.h>
+ 
+ /**
+  * enum proto-type - The protocol on WiLink chips which share a
+@@ -159,6 +160,7 @@ struct st_data_s {
+ 	unsigned long ll_state;
+ 	void *kim_data;
+ 	struct tty_struct *tty;
++	struct work_struct work_write_wakeup;
+ 
+ 	struct wake_lock st_awake;  /* Held while controller is awake */
+ };
+-- 
+2.50.1 (Apple Git-155)
+
